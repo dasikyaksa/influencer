@@ -11,4 +11,4 @@
 - `getProductDesc()` 의 map 객체에 키워드: 설명 추가
 - `getBadge()` 에 배지가 있으면 if문 추가
 
-수정 완료 후 `vercel --yes --prod`로 배포까지 실행하세요.
+수정 완료 후 사용자에게 `/deploy` 명령으로 배포를 안내하세요.

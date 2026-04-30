@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[친한약사 X YDY] 관리자 — 응답 조회</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --brand-primary: #FF6B35;
+      --brand-secondary: #FF8C42;
+      --brand-accent: #FFB088;
+      --brand-dark: #E84E1B;
+      --brand-soft: #FFF4ED;
+      --brand-softer: #FFFAF6;
+      --text-primary: #1A1A1A;
+      --text-secondary: #4A4A4A;
+      --text-tertiary: #8A8A8A;
+      --border-light: #F0E8E0;
+      --border-input: #E5DDD4;
+      --error: #E03131;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 32px rgba(255,107,53,0.12), 0 4px 12px rgba(0,0,0,0.06);
+      --radius: 16px;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FFF4ED 0%, #FFE8D6 50%, #FFF4ED 100%);
+      background-attachment: fixed;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Login View ── */
+    #login-view { display: none; }
+    #admin-view { display: none; }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 32px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      animation: fadeInUp 0.5s ease;
+      text-align: center;
+    }
+
+    .login-logo {
+      display: inline-block;
+      background: var(--brand-soft);
+      color: var(--brand-primary);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .login-logo::before {
+      content: '\1F512';
+      margin-right: 6px;
+    }
+
+    .login-card h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .login-card .sub {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: 28px;
+    }
+
+    .login-card .field {
+      margin-bottom: 14px;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border-input);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'Pretendard', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      color: var(--text-primary);
+    }
+    .login-card input:focus {
+      border-color: var(--brand-primary);
+    }
+    .login-card input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .login-err {
+      display: none;
+      background: #FFF5F5;
+      color: var(--error);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Pretendard', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-login:hover { opacity: 0.9; }
+
+    /* ── Admin View ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    .admin-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .admin-title .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      color: var(--brand-primary);
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      width: fit-content;
+    }
+    .admin-title .badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+    }
+    .admin-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .btn-sm {
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-input);
+      background: #fff;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Pretendard', sans-serif;
+      transition: all 0.2s;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-sm:hover {
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+    }
+    .btn-sm.primary {
+      background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+      color: #fff;
+      border-color: transparent;
+    }
+    .btn-sm.primary:hover { opacity: 0.9; }
+    .btn-sm.danger:hover {
+      border-color: var(--error);
+      color: var(--error);
+      background: #FFF5F5;
+    }
+
+    /* ── Stats Cards ── */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--brand-primary);
+    }
+    .stat-value.small {
+      font-size: 16px;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .toolbar input {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border-input);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Pretendard', sans-serif;
+      outline: none;
+      min-width: 220px;
+      transition: border-color 0.2s;
+      color: var(--text-primary);
+    }
+    .toolbar input:focus { border-color: var(--brand-primary); }
+    .toolbar input::placeholder { color: var(--text-tertiary); }
+
+    .stats-inline {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    .stats-inline strong {
+      color: var(--brand-primary);
+      font-weight: 700;
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-tertiary);
+      background: var(--brand-softer);
+      padding: 14px 12px;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--brand-softer); }
+
+    td.num {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      text-align: center;
+    }
+    td.id-cell {
+      color: var(--brand-primary);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    td.date-cell {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    td.addr-cell {
+      max-width: 220px;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .submission-del {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid var(--border-input);
+      background: #fff;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-family: 'Pretendard', sans-serif;
+      transition: all 0.2s;
+    }
+    .submission-del:hover {
+      border-color: var(--error);
+      color: var(--error);
+      background: #FFF5F5;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      padding: 80px 20px;
+      text-align: center;
+      border: 2px dashed var(--border-light);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    .empty-state .empty-icon {
+      font-size: 56px;
+      opacity: 0.5;
+      margin-bottom: 16px;
+    }
+    .empty-state .empty-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .empty-state .empty-desc {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text-primary);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transition: all 0.35s ease;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .admin-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .admin-stats {
+        grid-template-columns: 1fr;
+      }
+      .toolbar input {
+        width: 100%;
+        min-width: 0;
+      }
+      .toolbar .stats-inline {
+        margin-left: 0;
+      }
+      .admin-actions {
+        width: 100%;
+      }
+      .admin-actions .btn-sm {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login View ── -->
+  <div id="login-view">
+    <div class="login-wrap">
+      <div class="login-card">
+        <div class="login-logo">관리자 로그인</div>
+        <h1>이벤트 응답 관리</h1>
+        <p class="sub">응답 데이터를 조회하려면 로그인하세요.</p>
+        <form id="login-form" autocomplete="off">
+          <div class="field">
+            <input type="text" id="login-id" placeholder="아이디" value="admin" spellcheck="false" />
+          </div>
+          <div class="field">
+            <input type="password" id="login-pw" placeholder="비밀번호" value="1234" />
+          </div>
+          <div class="login-err" id="login-err"></div>
+          <button type="submit" class="btn-login">로그인</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Admin View ── -->
+  <div id="admin-view">
+    <div class="container">
+
+      <!-- Top Bar -->
+      <div class="admin-top">
+        <div class="admin-title">
+          <div class="badge"><span class="dot"></span>관리자</div>
+          <h1>📋 이벤트 응답 관리</h1>
+        </div>
+        <div class="admin-actions">
+          <a href="event.html" class="btn-sm">입력 폼 →</a>
+          <button class="btn-sm" onclick="window.open('https://docs.google.com/spreadsheets/d/1xhZ5W7YVJk9tWT8v5aL5ezab89YR-DgNut-1LbSjcYo/edit?gid=1036698934#gid=1036698934','_blank')">📊 구글 시트</button>
+          <button class="btn-sm primary" id="btn-excel">엑셀 내보내기</button>
+          <button class="btn-sm" id="btn-csv">CSV 내보내기</button>
+          <button class="btn-sm danger" id="btn-clear-all">전체 삭제</button>
+          <button class="btn-sm" id="btn-logout">로그아웃</button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-label">총 제출 건수</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">오늘 제출</div>
+          <div class="stat-value" id="stat-today">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">최근 업데이트</div>
+          <div class="stat-value small" id="stat-latest">-</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <input type="text" id="search-input" placeholder="🔍 인스타 / 수령인 / 주문번호 검색" spellcheck="false" />
+        <button class="btn-sm" id="refresh-btn">새로고침</button>
+        <div class="stats-inline" id="stats-inline">조회: <strong>0</strong>건</div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>제출번호</th>
+              <th>제출시각</th>
+              <th>상품</th>
+              <th>인스타그램</th>
+              <th>수령인</th>
+              <th>주소</th>
+              <th>연락처</th>
+              <th>주문번호</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ── Constants ── */
+    const ADMIN_ID = 'admin';
+    const ADMIN_PW = '1234';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ihndsT6HQh1WYRch8vnCdRlY084Tw5sPrLDfLpCJ5raQROrUysoTEZMdjcLSWC3nbw/exec';
+    const SESSION_KEY = 'event_form_admin_session_v1';
+    let cachedSubs = [];
+
+    /* ── DOM Refs ── */
+    const loginView   = document.getElementById('login-view');
+    const adminView   = document.getElementById('admin-view');
+    const loginForm   = document.getElementById('login-form');
+    const loginErr    = document.getElementById('login-err');
+    const searchInput = document.getElementById('search-input');
+
+    /* ── Init ── */
+    if (location.search.includes('login')) {
+      localStorage.removeItem(SESSION_KEY);
+      history.replaceState(null, '', location.pathname);
+    }
+
+    if (localStorage.getItem(SESSION_KEY) === 'ok') {
+      showAdmin();
+    } else {
+      loginView.style.display = '';
+    }
+
+    /* ── Login ── */
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('login-id').value.trim();
+      const pw = document.getElementById('login-pw').value.trim();
+      if (id === ADMIN_ID && pw === ADMIN_PW) {
+        localStorage.setItem(SESSION_KEY, 'ok');
+        loginErr.style.display = 'none';
+        showAdmin();
+      } else {
+        loginErr.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+        loginErr.style.display = 'block';
+      }
+    });
+
+    /* ── Show Admin ── */
+    function showAdmin() {
+      loginView.style.display = 'none';
+      adminView.style.display = '';
+      loadAndRender();
+    }
+
+    /* ── Data Flow ── */
+    async function loadAndRender() {
+      renderLoading();
+      try {
+        const data = await fetchSubs();
+        cachedSubs = data;
+        renderTable();
+        updateStats();
+      } catch (err) {
+        console.error(err);
+        showToast('데이터를 불러오지 못했습니다.');
+        document.getElementById('table-body').innerHTML =
+          '<tr><td colspan="10" style="padding:40px;text-align:center;color:var(--text-tertiary);">불러오기 실패</td></tr>';
+      }
+    }
+
+    async function fetchSubs() {
+      const res = await fetch(APPS_SCRIPT_URL);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'fetch failed');
+      return json.data || [];
+    }
+
+    async function apiPost(body) {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'post failed');
+      return json;
+    }
+
+    /* ── Render ── */
+    function renderLoading() {
+      document.getElementById('table-body').innerHTML =
+        '<tr><td colspan="10" style="padding:40px;text-align:center;color:var(--text-tertiary);">불러오는 중...</td></tr>';
+    }
+
+    function getFiltered() {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) return [...cachedSubs];
+      return cachedSubs.filter(s => {
+        const hay = [s.instagram, s.recipient, s.orderNumber].filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function renderTable() {
+      const filtered = getFiltered();
+      // sort by submittedAt desc
+      filtered.sort((a, b) => {
+        const da = a.submittedAt || '';
+        const db = b.submittedAt || '';
+        return db.localeCompare(da);
+      });
+
+      const tbody = document.getElementById('table-body');
+
+      // Update inline stats
+      document.getElementById('stats-inline').innerHTML = '조회: <strong>' + filtered.length + '</strong>건';
+
+      if (filtered.length === 0) {
+        const q = searchInput.value.trim();
+        const isSearch = q.length > 0;
+        tbody.innerHTML = '';
+        // Show empty state outside table
+        const wrap = document.querySelector('.table-wrap');
+        let emptyEl = document.getElementById('empty-state');
+        if (!emptyEl) {
+          emptyEl = document.createElement('div');
+          emptyEl.id = 'empty-state';
+          wrap.parentNode.insertBefore(emptyEl, wrap.nextSibling);
+        }
+        emptyEl.className = 'empty-state';
+        emptyEl.innerHTML =
+          '<div class="empty-icon">📭</div>' +
+          '<div class="empty-title">' + (isSearch ? '검색 결과가 없어요' : '아직 제출된 데이터가 없어요') + '</div>' +
+          '<div class="empty-desc">' + (isSearch ? '다른 검색어로 시도해 보세요.' : '이벤트 응답이 제출되면 여기에 표시됩니다.') + '</div>';
+        emptyEl.style.display = '';
+        wrap.style.display = 'none';
+        return;
+      }
+
+      // Hide empty state, show table
+      const emptyEl = document.getElementById('empty-state');
+      if (emptyEl) emptyEl.style.display = 'none';
+      document.querySelector('.table-wrap').style.display = '';
+
+      let html = '';
+      filtered.forEach((s, i) => {
+        html += '<tr>' +
+          '<td class="num">' + (i + 1) + '</td>' +
+          '<td class="id-cell">' + esc(s.id || '') + '</td>' +
+          '<td class="date-cell">' + esc(s.submittedAt || '') + '</td>' +
+          '<td>' + esc(s.product || '') + '</td>' +
+          '<td>' + esc(s.instagram || '') + '</td>' +
+          '<td>' + esc(s.recipient || '') + '</td>' +
+          '<td class="addr-cell">' + esc(s.address || '') + '</td>' +
+          '<td>' + esc(s.phone || '') + '</td>' +
+          '<td>' + esc(s.orderNumber || '') + '</td>' +
+          '<td><button class="submission-del" data-id="' + esc(s.id || '') + '">삭제</button></td>' +
+          '</tr>';
+      });
+      tbody.innerHTML = html;
+    }
+
+    function updateStats() {
+      document.getElementById('stat-total').textContent = cachedSubs.length;
+
+      // Today count
+      const today = new Date().toISOString().slice(0, 10);
+      const todayCount = cachedSubs.filter(s => (s.submittedAt || '').slice(0, 10) === today).length;
+      document.getElementById('stat-today').textContent = todayCount;
+
+      // Latest
+      if (cachedSubs.length > 0) {
+        const sorted = [...cachedSubs].sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+        const latest = sorted[0].submittedAt || '-';
+        // Format to YYYY-MM-DD HH:mm
+        const formatted = latest.length >= 16 ? latest.slice(0, 16).replace('T', ' ') : latest;
+        document.getElementById('stat-latest').textContent = formatted;
+      } else {
+        document.getElementById('stat-latest').textContent = '-';
+      }
+    }
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    /* ── Search ── */
+    searchInput.addEventListener('input', function() {
+      renderTable();
+    });
+
+    /* ── Refresh ── */
+    document.getElementById('refresh-btn').addEventListener('click', async function() {
+      await loadAndRender();
+      showToast('데이터를 새로고침했습니다.');
+    });
+
+    /* ── Delete Individual ── */
+    document.getElementById('table-body').addEventListener('click', async function(e) {
+      const btn = e.target.closest('.submission-del');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (!confirm('이 응답을 삭제할까요? 되돌릴 수 없습니다.')) return;
+      btn.disabled = true;
+      btn.textContent = '삭제 중...';
+      try {
+        await apiPost({ action: 'delete', id: id });
+        cachedSubs = cachedSubs.filter(s => s.id !== id);
+        renderTable();
+        updateStats();
+        showToast('삭제되었습니다.');
+      } catch (err) {
+        console.error(err);
+        showToast('삭제에 실패했습니다.');
+        btn.disabled = false;
+        btn.textContent = '삭제';
+      }
+    });
+
+    /* ── Clear All ── */
+    document.getElementById('btn-clear-all').addEventListener('click', async function() {
+      if (!confirm('모든 제출 데이터를 삭제할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+      const btn = this;
+      btn.disabled = true;
+      btn.textContent = '삭제 중...';
+      try {
+        await apiPost({ action: 'clearAll' });
+        cachedSubs = [];
+        renderTable();
+        updateStats();
+        showToast('모든 데이터가 삭제되었습니다.');
+      } catch (err) {
+        console.error(err);
+        showToast('삭제에 실패했습니다.');
+      }
+      btn.disabled = false;
+      btn.textContent = '전체 삭제';
+    });
+
+    /* ── Export ── */
+    function getExportHeaders() {
+      return ['제출번호','제출일시','제품명','인스타그램','수령인','배송주소','전화번호','주문번호'];
+    }
+
+    function getExportRows() {
+      const filtered = getFiltered();
+      filtered.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+      return filtered.map(s => [
+        s.id || '',
+        s.submittedAt || '',
+        s.product || '',
+        s.instagram || '',
+        s.recipient || '',
+        s.address || '',
+        s.phone || '',
+        s.orderNumber || ''
+      ]);
+    }
+
+    function getDateStamp() {
+      const d = new Date();
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
+    document.getElementById('btn-excel').addEventListener('click', function() {
+      const headers = getExportHeaders();
+      const rows = getExportRows();
+      const aoa = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '당첨자 명단');
+      XLSX.writeFile(wb, '친한약사_이벤트당첨자_' + getDateStamp() + '.xlsx');
+      showToast('엑셀 파일을 다운로드합니다.');
+    });
+
+    document.getElementById('btn-csv').addEventListener('click', function() {
+      const headers = getExportHeaders();
+      const rows = getExportRows();
+      const lines = [headers, ...rows].map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','));
+      const bom = '﻿';
+      const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '친한약사_이벤트당첨자_' + getDateStamp() + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('CSV 파일을 다운로드합니다.');
+    });
+
+    /* ── Logout ── */
+    document.getElementById('btn-logout').addEventListener('click', function() {
+      localStorage.removeItem(SESSION_KEY);
+      location.reload();
+    });
+
+    /* ── Toast ── */
+    let toastTimer;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+    }
+  </script>
+</body>
+</html>

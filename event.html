@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[친한약사 X OO] 이벤트 당첨자 정보 입력</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --brand-primary: #E5A100;
+  --brand-secondary: #F0B429;
+  --brand-accent: #FFD470;
+  --brand-dark: #C48900;
+  --brand-soft: #FFF9E6;
+  --brand-softer: #FFFDF5;
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --text-tertiary: #9A9A9A;
+  --border-light: #EDE6D2;
+  --border-input: #E2DCCA;
+  --error: #E03131;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --radius: 16px;
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: #FFFBEE;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(229,161,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(240,180,41,0.06) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 28px 16px 64px;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.header-profile {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: contain;
+  margin-bottom: 14px;
+  background: #000;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid rgba(229,161,0,0.15);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-primary);
+  margin-bottom: 14px;
+}
+
+.header-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.header p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+/* ── Product Card ── */
+.product-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.product-banner {
+  background: linear-gradient(135deg, #F0B429 0%, #E5A100 100%);
+  padding: 16px 20px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-banner::before {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  top: -30px;
+  right: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+}
+
+.product-banner-tag {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.product-banner h2 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  position: relative;
+}
+
+.product-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 12px 20px;
+}
+
+.product-meta-item {
+  text-align: center;
+  position: relative;
+}
+
+.product-meta-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--border-light);
+}
+
+.product-meta-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.product-meta-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.product-meta-value .discount {
+  color: var(--brand-primary);
+  font-size: 10px;
+}
+
+/* ── Form Card ── */
+.form-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.form-intro {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.form-intro h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-intro h3::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--brand-primary), var(--brand-secondary));
+}
+
+.form-intro p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.required-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
+.required-note .required {
+  color: var(--error);
+}
+
+.form-body {
+  padding: 8px 20px 20px;
+}
+
+/* ── Field ── */
+.field {
+  margin-top: 18px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.field label .required {
+  color: var(--error);
+  margin-left: 2px;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+
+.field input[type="text"],
+.field input[type="tel"] {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  background: #FAFAF8;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.field input::placeholder {
+  color: #C4BBB3;
+  font-size: 13px;
+}
+
+.field input:hover {
+  background: #fff;
+}
+
+.field input:focus {
+  background: #fff;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(229,161,0,0.1);
+}
+
+.field input[readonly] {
+  background: #F3F2F0 !important;
+  cursor: default;
+}
+
+.field.error input {
+  border-color: var(--error);
+  background: #FFF5F5;
+}
+
+.field.error input:focus {
+  box-shadow: 0 0 0 3px rgba(224,49,49,0.1);
+}
+
+.field-error-msg {
+  display: none;
+  font-size: 11px;
+  color: var(--error);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.field.error .field-error-msg {
+  display: block;
+}
+
+/* ── Input icon wrap (Instagram @) ── */
+.input-icon-wrap {
+  position: relative;
+}
+
+.input-icon-wrap .input-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.input-icon-wrap input {
+  padding-left: 28px !important;
+}
+
+/* ── Address field ── */
+.addr-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.addr-row input {
+  flex: 1;
+}
+
+.addr-search-btn {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(229,161,0,0.3);
+  transition: opacity 0.2s;
+}
+
+.addr-search-btn:active {
+  opacity: 0.85;
+}
+
+.addr-base {
+  margin-bottom: 8px;
+}
+
+/* ── Form Actions ── */
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn {
+  padding: 13px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  flex: 1;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(229,161,0,0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  flex: 0 0 auto;
+  padding: 0 16px;
+  font-size: 13px;
+  background: var(--brand-soft);
+  color: var(--brand-primary);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  opacity: 0;
+  background: #1A1A1A;
+  color: white;
+  padding: 12px 22px;
+  border-radius: 100px;
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+  z-index: 1000;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast.success {
+  background: linear-gradient(135deg, #2BA84A 0%, #1F8836 100%);
+}
+
+.toast.error {
+  background: linear-gradient(135deg, #E03131 0%, #C92A2A 100%);
+}
+
+/* ── Success View ── */
+#success-view {
+  display: none;
+}
+
+.success-screen {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  padding: 40px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.success-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD470, #E5A100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  animation: bounce 0.5s ease forwards;
+}
+
+@keyframes bounce {
+  0% { transform: scale(0.5); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.success-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.success-screen h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.success-screen > p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+  margin-bottom: 24px;
+}
+
+.success-summary {
+  border: 1px dashed var(--brand-accent);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.success-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 7px 0;
+}
+
+.success-summary-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.success-summary-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.success-summary-value {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 60%;
+  text-align: right;
+  word-break: break-word;
+}
+
+.success-back-btn {
+  max-width: 180px;
+  margin: 0 auto;
+  display: block;
+  width: 100%;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  line-height: 1.8;
+}
+
+.footer a.admin-toggle {
+  color: var(--text-tertiary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.footer a.admin-toggle:hover {
+  border-bottom-color: var(--text-tertiary);
+}
+
+/* ── Mobile ── */
+@media (max-width: 540px) {
+  .container {
+    padding: 18px 12px 52px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn-secondary {
+    flex: 1;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-badge">
+      <span class="header-badge-dot"></span>
+      친한약사
+    </div>
+    <h1>이벤트 당첨자 정보 입력</h1>
+    <p>당첨 너무너무 추카드려요 ❤
+배송을 위해 아래 내용에 답변 부탁드립니다 :)</p>
+  </div>
+
+  <!-- ── Main View ── -->
+  <div id="main-view">
+
+    <!-- Product Card -->
+    <div class="product-card">
+      <div class="product-banner">
+        <div class="product-banner-tag">🛒 공동구매 · OO</div>
+        <h2>[공동구매] 친한약사 X OO 비타민C 1000</h2>
+      </div>
+      <div class="product-meta">
+        <div class="product-meta-item">
+          <div class="product-meta-label">판매가</div>
+          <div class="product-meta-value">52,500원 <span class="discount">(35%↓)</span></div>
+        </div>
+        <div class="product-meta-item">
+          <div class="product-meta-label">옵션</div>
+          <div class="product-meta-value">3 / 6박스</div>
+        </div>
+        <div class="product-meta-item">
+          <div class="product-meta-label">배송</div>
+          <div class="product-meta-value">무료 · CJ</div>
+        </div>
+        <div class="product-meta-item">
+          <div class="product-meta-label">소비기한</div>
+          <div class="product-meta-value">2027-08-20</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <div class="form-intro">
+        <h3>당첨자 정보</h3>
+        <p>정확한 배송을 위해 아래 정보를 입력해 주세요.</p>
+        <div class="required-note"><span class="required">*</span> 표시는 필수 입력 항목이에요</div>
+      </div>
+
+      <form id="event-form" class="form-body" novalidate>
+
+        <!-- 1. 구매하신 제품명 -->
+        <div class="field" data-name="product">
+          <label>구매하신 제품명 <span class="required">*</span></label>
+          <span class="field-hint">옵션(박스 수)을 포함해 주세요</span>
+          <input type="text" id="product" name="product" required
+                 value="친한약사 X OO 비타민C 1000"
+                 placeholder="예: 친한약사 X OO 비타민C 1000 / 30일분">
+          <div class="field-error-msg">제품명을 입력해 주세요</div>
+        </div>
+
+        <!-- 2. 인스타그램 아이디 -->
+        <div class="field" data-name="instagram">
+          <label>인스타그램 아이디 <span class="required">*</span></label>
+          <span class="field-hint">본인 확인에 사용돼요</span>
+          <div class="input-icon-wrap">
+            <span class="input-prefix">@</span>
+            <input type="text" id="instagram" name="instagram" required
+                   placeholder="your_id">
+          </div>
+          <div class="field-error-msg">인스타그램 아이디를 입력해 주세요</div>
+        </div>
+
+        <!-- 3. 수령인 성함 -->
+        <div class="field" data-name="recipient">
+          <label>수령인 성함 <span class="required">*</span></label>
+          <input type="text" id="recipient" name="recipient" required
+                 placeholder="홍길동">
+          <div class="field-error-msg">수령인 성함을 입력해 주세요</div>
+        </div>
+
+        <!-- 4. 배송 주소 -->
+        <div class="field" data-name="address">
+          <label>배송 주소 <span class="required">*</span></label>
+          <span class="field-hint">검색 후 상세 주소(동·호수)를 입력해 주세요</span>
+          <div class="addr-row">
+            <input type="text" id="addr-zipcode" name="addr-zipcode" readonly
+                   placeholder="우편번호">
+            <button type="button" class="addr-search-btn" onclick="searchAddress()">주소 검색</button>
+          </div>
+          <input type="text" id="addr-base" class="addr-base" name="addr-base" readonly
+                 placeholder="기본 주소">
+          <input type="text" id="addr-detail" name="addr-detail"
+                 placeholder="상세 주소 (동/호수)">
+          <input type="hidden" id="addr-full" name="addr-full">
+          <div class="field-error-msg">배송 주소를 입력해 주세요</div>
+        </div>
+
+        <!-- 5. 연락처 -->
+        <div class="field" data-name="phone">
+          <label>연락처 <span class="required">*</span></label>
+          <span class="field-hint">배송 연락에 사용돼요</span>
+          <input type="tel" id="phone" name="phone" required maxlength="13"
+                 placeholder="010-0000-0000">
+          <div class="field-error-msg">올바른 연락처를 입력해 주세요</div>
+        </div>
+
+        <!-- 6. 주문번호 -->
+        <div class="field" data-name="order_number">
+          <label>주문번호 <span class="required">*</span></label>
+          <span class="field-hint">결제 완료 후 받은 주문번호예요</span>
+          <input type="text" id="order_number" name="order_number" required
+                 placeholder="예: 100001">
+          <div class="field-error-msg">주문번호를 입력해 주세요</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">초기화</button>
+          <button type="submit" id="submit-btn" class="btn btn-primary">제출하기</button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ── Success View ── -->
+  <div id="success-view">
+    <div class="success-screen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2>제출이 완료되었어요!</h2>
+      <p>입력하신 정보를 기반으로
+빠르게 상품을 준비해서 보내드릴게요 ❤</p>
+      <div class="success-summary" id="success-summary"></div>
+      <button type="button" class="btn btn-secondary success-back-btn" onclick="goBack()">돌아가기</button>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <p>제출하신 정보는 배송 목적에만 이용되며, 배송 완료 후 즉시 파기됩니다.</p>
+    <p style="margin-top:6px;"><a class="admin-toggle" href="event-admin.html?login">관리자 로그인 →</a></p>
+  </div>
+
+</div>
+
+<!-- ── Toast ── -->
+<div id="toast" class="toast"></div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ihndsT6HQh1WYRch8vnCdRlY084Tw5sPrLDfLpCJ5raQROrUysoTEZMdjcLSWC3nbw/exec';
+
+/* ── Toast ── */
+let toastTimer = null;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type ? ' ' + type : '');
+  // force reflow
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* ── Phone auto-format ── */
+document.getElementById('phone').addEventListener('input', function(e) {
+  let v = this.value.replace(/[^0-9]/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length <= 3) {
+    this.value = v;
+  } else if (v.length <= 7) {
+    this.value = v.slice(0, 3) + '-' + v.slice(3);
+  } else {
+    this.value = v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7);
+  }
+});
+
+/* ── Daum Postcode ── */
+function searchAddress() {
+  new daum.Postcode({
+    width: 500,
+    height: 600,
+    oncomplete: function(data) {
+      document.getElementById('addr-zipcode').value = data.zonecode;
+      document.getElementById('addr-base').value = data.roadAddress || data.jibunAddress;
+      document.getElementById('addr-detail').value = '';
+      document.getElementById('addr-detail').focus();
+      serializeAddress();
+      // clear error if present
+      const field = document.querySelector('.field[data-name="address"]');
+      if (field.classList.contains('error')) validateAddress();
+    }
+  }).open({
+    left: (window.screen.width / 2) - 250,
+    top: (window.screen.height / 2) - 300
+  });
+}
+
+function serializeAddress() {
+  const zip = document.getElementById('addr-zipcode').value.trim();
+  const base = document.getElementById('addr-base').value.trim();
+  const detail = document.getElementById('addr-detail').value.trim();
+  let full = '';
+  if (zip) full += '(' + zip + ') ';
+  full += base;
+  if (detail) full += ' ' + detail;
+  document.getElementById('addr-full').value = full.trim();
+}
+
+// Serialize on detail input
+document.getElementById('addr-detail').addEventListener('input', function() {
+  serializeAddress();
+  const field = document.querySelector('.field[data-name="address"]');
+  if (field.classList.contains('error')) validateAddress();
+});
+
+/* ── Validation ── */
+function validateField(name) {
+  const field = document.querySelector(`.field[data-name="${name}"]`);
+  if (!field) return true;
+
+  let valid = true;
+
+  switch(name) {
+    case 'product':
+      valid = document.getElementById('product').value.trim().length > 0;
+      break;
+    case 'instagram':
+      valid = document.getElementById('instagram').value.trim().length > 0;
+      break;
+    case 'recipient':
+      valid = document.getElementById('recipient').value.trim().length > 0;
+      break;
+    case 'address':
+      valid = validateAddress(true);
+      break;
+    case 'phone':
+      valid = /^01[0-9]-\d{3,4}-\d{4}$/.test(document.getElementById('phone').value.trim());
+      break;
+    case 'order_number':
+      valid = document.getElementById('order_number').value.trim().length > 0;
+      break;
+  }
+
+  field.classList.toggle('error', !valid);
+  return valid;
+}
+
+function validateAddress(silent) {
+  const field = document.querySelector('.field[data-name="address"]');
+  const base = document.getElementById('addr-base').value.trim();
+  const detail = document.getElementById('addr-detail').value.trim();
+  // zipcode optional if detail exists
+  const valid = base.length > 0 || detail.length > 0;
+  if (!silent) field.classList.toggle('error', !valid);
+  return valid;
+}
+
+function validateAll() {
+  const fields = ['product', 'instagram', 'recipient', 'address', 'phone', 'order_number'];
+  let allValid = true;
+  let firstError = null;
+
+  for (const name of fields) {
+    const valid = validateField(name);
+    if (!valid && !firstError) {
+      firstError = document.querySelector(`.field[data-name="${name}"]`);
+    }
+    if (!valid) allValid = false;
+  }
+
+  if (!allValid && firstError) {
+    showToast('필수 항목을 확인해 주세요', 'error');
+    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  return allValid;
+}
+
+/* ── Blur validation ── */
+const fieldNames = ['product', 'instagram', 'recipient', 'phone', 'order_number'];
+fieldNames.forEach(name => {
+  const input = document.getElementById(name);
+  if (!input) return;
+  input.addEventListener('blur', () => validateField(name));
+  input.addEventListener('input', () => {
+    const field = document.querySelector(`.field[data-name="${name}"]`);
+    if (field.classList.contains('error')) validateField(name);
+  });
+});
+
+// Address detail blur
+document.getElementById('addr-detail').addEventListener('blur', () => validateField('address'));
+
+/* ── Submit ── */
+document.getElementById('event-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  if (!validateAll()) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '제출 중...';
+
+  serializeAddress();
+
+  const payload = {
+    action: 'submit',
+    submittedAt: new Date().toISOString(),
+    product: document.getElementById('product').value.trim(),
+    instagram: document.getElementById('instagram').value.trim().replace(/^@/, ''),
+    recipient: document.getElementById('recipient').value.trim(),
+    address: document.getElementById('addr-full').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    orderNumber: document.getElementById('order_number').value.trim()
+  };
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      showToast('제출 완료! 🎉', 'success');
+      renderSuccess(result.data, payload);
+    } else {
+      throw new Error(result.message || '제출에 실패했어요');
+    }
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = '제출하기';
+    showToast(err.message || '제출 중 오류가 발생했어요', 'error');
+  }
+});
+
+/* ── Success ── */
+function renderSuccess(data, payload) {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('success-view').style.display = 'block';
+
+  const id = (data && data.id) || '-';
+  const p = payload || {};
+
+  const rows = [
+    { label: '제출번호', value: id },
+    { label: '수령인', value: p.recipient || '-' },
+    { label: '연락처', value: p.phone || '-' },
+    { label: '인스타그램', value: p.instagram ? '@' + p.instagram : '-' },
+    { label: '주문번호', value: p.orderNumber || '-' }
+  ];
+
+  const summary = document.getElementById('success-summary');
+  summary.innerHTML = rows.map(r =>
+    `<div class="success-summary-row">
+      <span class="success-summary-label">${r.label}</span>
+      <span class="success-summary-value">${r.value}</span>
+    </div>`
+  ).join('');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── Go Back ── */
+function goBack() {
+  document.getElementById('success-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+  resetForm();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = false;
+  btn.textContent = '제출하기';
+}
+
+/* ── Reset ── */
+function resetForm() {
+  const form = document.getElementById('event-form');
+  form.reset();
+  // Restore default product value
+  document.getElementById('product').value = '친한약사 X OO 비타민C 1000';
+  // Clear address fields
+  document.getElementById('addr-zipcode').value = '';
+  document.getElementById('addr-base').value = '';
+  document.getElementById('addr-detail').value = '';
+  document.getElementById('addr-full').value = '';
+  // Clear all error states
+  document.querySelectorAll('.field.error').forEach(f => f.classList.remove('error'));
+}
+</script>
+
+</body>
+</html>
