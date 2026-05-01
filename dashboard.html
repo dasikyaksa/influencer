@@ -1714,9 +1714,11 @@
     const seller = detail ? (detail.seller || {}) : {};
     const products = detail ? (detail.group_purchase_products || []) : plan.products;
     const optSets = detail ? (detail.group_purchase_product_opt_sets || []) : [];
+    const report = detail ? (detail.group_purchase_plan_report_sale || {}) : {};
 
     let html = '';
 
+    // 기본 정보
     html += '<div class="modal-section">' +
       '<h4>기본 정보</h4>' +
       '<div class="modal-info-grid">' +
@@ -1732,6 +1734,77 @@
       infoItem('총 매출', plan.totalSales ? formatCurrency(plan.totalSales) : '-') +
       '</div></div>';
 
+    // 매출 요약
+    const hasReport = report.order_count_total || report.normal_order_amount_total;
+    if (hasReport) {
+      html += '<div class="modal-section"><h4>매출 요약</h4>' +
+        '<div class="modal-info-grid">' +
+        infoItem('전체 주문수', formatNumber(report.order_count_total || 0) + '건') +
+        infoItem('전체 박스수', formatNumber(report.box_count_total || 0) + '개') +
+        infoItem('주문금액 (정상)', formatCurrency(report.normal_order_amount_total || 0)) +
+        infoItem('주문수 (정상)', formatNumber(report.normal_order_count_total || 0) + '건') +
+        '</div></div>';
+    }
+
+    // 일별 매출
+    const dayReport = report.group_purchase_plan_report_sale_day || {};
+    const dayRows = dayReport.group_purchase_plan_report_sale_day_rows || [];
+    if (dayRows.length > 0) {
+      html += '<div class="modal-section"><h4>일별 매출</h4>' +
+        '<div style="overflow-x:auto"><table class="modal-opts-table"><thead><tr>' +
+        '<th>날짜</th><th>주문수</th><th>박스수</th><th>주문금액</th><th>대기</th><th>취소</th>' +
+        '</tr></thead><tbody>';
+      dayRows.forEach(d => {
+        html += '<tr>' +
+          '<td>' + formatDate(d.order_date || '') + '</td>' +
+          '<td class="right">' + formatNumber(d.order_count || 0) + '</td>' +
+          '<td class="right">' + formatNumber(d.box_count || 0) + '</td>' +
+          '<td class="right">' + formatCurrency(d.order_amount || 0) + '</td>' +
+          '<td class="right">' + formatNumber(d.wait_order_count || 0) + '</td>' +
+          '<td class="right">' + formatNumber(d.cancel_order_count || 0) + '</td>' +
+          '</tr>';
+      });
+      const dt = dayReport;
+      html += '</tbody><tfoot><tr style="font-weight:600;background:var(--bg-secondary)">' +
+        '<td>합계</td>' +
+        '<td class="right">' + formatNumber(dt.order_count_total || 0) + '</td>' +
+        '<td class="right">' + formatNumber(dt.box_count_total || 0) + '</td>' +
+        '<td class="right">' + formatCurrency(dt.order_amount_total || 0) + '</td>' +
+        '<td class="right">' + formatNumber(dt.wait_order_count_total || 0) + '</td>' +
+        '<td class="right">' + formatNumber(dt.cancel_order_count_total || 0) + '</td>' +
+        '</tr></tfoot></table></div></div>';
+    }
+
+    // 옵션별 매출
+    const optReport = report.group_purchase_plan_report_sale_option || {};
+    const optRows = optReport.group_purchase_plan_report_sale_option_rows || [];
+    if (optRows.length > 0) {
+      const optTotal = report.group_purchase_plan_report_sale_option_total || {};
+      html += '<div class="modal-section"><h4>옵션별 매출</h4>' +
+        '<div style="overflow-x:auto"><table class="modal-opts-table"><thead><tr>' +
+        '<th>옵션명</th><th>주문수</th><th>박스수</th><th>주문금액</th><th>대기금액</th><th>취소금액</th>' +
+        '</tr></thead><tbody>';
+      optRows.forEach(o => {
+        html += '<tr>' +
+          '<td>' + esc(o.option_name || '-') + '</td>' +
+          '<td class="right">' + formatNumber(o.order_count || 0) + '</td>' +
+          '<td class="right">' + formatNumber(o.box_count || 0) + '</td>' +
+          '<td class="right">' + formatCurrency(o.order_amount || 0) + '</td>' +
+          '<td class="right">' + formatCurrency(o.wait_order_amount || 0) + '</td>' +
+          '<td class="right">' + formatCurrency(o.cancel_order_amount || 0) + '</td>' +
+          '</tr>';
+      });
+      html += '</tbody><tfoot><tr style="font-weight:600;background:var(--bg-secondary)">' +
+        '<td>합계</td>' +
+        '<td class="right">' + formatNumber(optTotal.order_count_total || 0) + '</td>' +
+        '<td class="right">' + formatNumber(optTotal.box_count_total || 0) + '</td>' +
+        '<td class="right">' + formatCurrency(optTotal.order_amount_total || 0) + '</td>' +
+        '<td class="right">' + formatCurrency(optTotal.wait_order_amount_total || 0) + '</td>' +
+        '<td class="right">' + formatCurrency(optTotal.cancel_order_amount_total || 0) + '</td>' +
+        '</tr></tfoot></table></div></div>';
+    }
+
+    // 대표 이미지
     const imgUrl = (products[0] || {}).image_url || plan.imageUrl;
     if (imgUrl) {
       html += '<div class="modal-section"><h4>대표 이미지</h4>' +
@@ -1739,6 +1812,7 @@
         '</div>';
     }
 
+    // 공구 제품
     if (products.length > 0) {
       html += '<div class="modal-section"><h4>공구 제품 (' + products.length + ')</h4>';
       products.forEach(p => {
@@ -1751,6 +1825,7 @@
       html += '</div>';
     }
 
+    // 옵션별 가격 / 커미션
     if (optSets.length > 0) {
       const allOpts = [];
       optSets.forEach(set => {
@@ -1782,6 +1857,7 @@
       }
     }
 
+    // 메모
     if (plan.memo) {
       html += '<div class="modal-section"><h4>메모</h4>' +
         '<div style="padding:10px 12px;background:var(--bg-secondary);border-radius:8px;font-size:13px;white-space:pre-wrap">' +
