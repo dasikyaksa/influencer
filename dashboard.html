@@ -1697,40 +1697,89 @@
     if (!plan) return;
 
     document.getElementById('modal-title').textContent = plan.title || '공구 상세';
+    document.getElementById('modal-body').innerHTML =
+      '<div style="text-align:center;padding:40px 0;color:var(--text-tertiary)">' +
+      '<div class="loading-spinner" style="margin:0 auto 12px"></div>상세 정보 로딩 중...</div>';
+    document.getElementById('detail-modal').classList.add('show');
+
+    let detail = null;
+    try {
+      detail = await fetchPlanDetail(planId);
+    } catch (e) {
+      console.warn('상세 API 실패, 목록 데이터로 표시:', e.message);
+    }
+
+    const gp = detail ? (detail.group_purchase_plan || {}) : {};
+    const influencer = detail ? (detail.influencer || {}) : {};
+    const seller = detail ? (detail.seller || {}) : {};
+    const products = detail ? (detail.group_purchase_products || []) : plan.products;
+    const optSets = detail ? (detail.group_purchase_product_opt_sets || []) : [];
 
     let html = '';
 
     html += '<div class="modal-section">' +
       '<h4>기본 정보</h4>' +
       '<div class="modal-info-grid">' +
-      infoItem('공구명', plan.title) +
-      infoItem('브랜드', plan.brand) +
-      infoItem('시작일', formatDate(plan.startDate)) +
-      infoItem('종료일', formatDate(plan.endDate)) +
+      infoItem('공구명', gp.group_purchase_title || plan.title) +
+      infoItem('브랜드', gp.brand_name || plan.brand) +
+      infoItem('시작일', formatDate(gp.start_datetime || plan.startDate)) +
+      infoItem('종료일', formatDate(gp.end_datetime || plan.endDate)) +
       infoItem('진행상태', plan.stepLabel) +
-      infoItem('약사', plan.influencerName) +
-      infoItem('약국', plan.pharmacyName) +
-      infoItem('파트너', plan.sellerName) +
+      infoItem('약사', influencer.name || plan.influencerName) +
+      infoItem('약국', influencer.pharmacy_name || plan.pharmacyName) +
+      infoItem('파트너', seller.company_name || plan.sellerName) +
       infoItem('담당자', plan.adminName) +
       infoItem('총 매출', plan.totalSales ? formatCurrency(plan.totalSales) : '-') +
       '</div></div>';
 
-    if (plan.imageUrl) {
+    const imgUrl = (products[0] || {}).image_url || plan.imageUrl;
+    if (imgUrl) {
       html += '<div class="modal-section"><h4>대표 이미지</h4>' +
-        '<img src="' + esc(plan.imageUrl) + '" style="max-width:100%;border-radius:8px" onerror="this.style.display=\'none\'" />' +
+        '<img src="' + esc(imgUrl) + '" style="max-width:100%;border-radius:8px" onerror="this.style.display=\'none\'" />' +
         '</div>';
     }
 
-    if (plan.products.length > 0) {
-      html += '<div class="modal-section"><h4>공구 제품</h4>';
-      plan.products.forEach(p => {
-        const imgSrc = p.image_url || '';
+    if (products.length > 0) {
+      html += '<div class="modal-section"><h4>공구 제품 (' + products.length + ')</h4>';
+      products.forEach(p => {
+        const pImg = p.image_url || '';
         html += '<div class="modal-product">' +
-          (imgSrc ? '<img src="' + esc(imgSrc) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+          (pImg ? '<img src="' + esc(pImg) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
           '<span class="name">' + esc(p.product_name || p.group_purchase_product_name || '') + '</span>' +
           '</div>';
       });
       html += '</div>';
+    }
+
+    if (optSets.length > 0) {
+      const allOpts = [];
+      optSets.forEach(set => {
+        const opts = set.group_purchase_product_opts || [];
+        opts.forEach(o => allOpts.push(o));
+      });
+      if (allOpts.length > 0) {
+        html += '<div class="modal-section"><h4>옵션별 가격 / 커미션 (' + allOpts.length + ')</h4>' +
+          '<div style="overflow-x:auto">' +
+          '<table class="modal-opts-table"><thead><tr>' +
+          '<th>옵션명</th><th>판매가</th><th>할인가</th><th>할인율</th><th>인플루언서</th><th>에이전시</th>' +
+          '</tr></thead><tbody>';
+        allOpts.forEach(o => {
+          const salePrice = o.sale_price || 0;
+          const discPrice = o.discounted_price || 0;
+          const discRate = o.discount_rate || 0;
+          const infComm = o.influencer_commission_rate || 0;
+          const agComm = o.agency_commission_rate || 0;
+          html += '<tr>' +
+            '<td>' + esc(o.option_name || '-') + '</td>' +
+            '<td class="right">' + formatCurrency(salePrice) + '</td>' +
+            '<td class="right">' + formatCurrency(discPrice) + '</td>' +
+            '<td class="right">' + discRate + '%</td>' +
+            '<td class="right">' + infComm + '%</td>' +
+            '<td class="right">' + agComm + '%</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+      }
     }
 
     if (plan.memo) {
@@ -1740,7 +1789,6 @@
     }
 
     document.getElementById('modal-body').innerHTML = html;
-    document.getElementById('detail-modal').classList.add('show');
   };
 
   function infoItem(label, value) {
