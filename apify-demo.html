@@ -343,6 +343,12 @@ const posts = await res.json();
         || '';
   }
 
+  function proxyImg(url) {
+    if (!url) return '';
+    // 동일 origin 의 functions 프록시 경유 — 인스타 CDN referrer/origin 차단 우회
+    return '/api/img-proxy?url=' + encodeURIComponent(url);
+  }
+
   function renderResults(posts, fetchedAt) {
     if (!Array.isArray(posts) || posts.length === 0) {
       resultsEl.innerHTML = '<p class="hint">포스트가 없습니다. 핸들을 다시 확인해주세요.</p>';
@@ -365,8 +371,8 @@ const posts = await res.json();
         <a class="card" href="${esc(url)}" target="_blank" rel="noopener">
           <div class="img-wrap">
             ${thumb
-              ? `<img src="${esc(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.classList.add('show');">
-                 <div class="img-fallback"><span class="icon">🚫</span>이미지 로드 실패<br><small>(인스타 CDN 차단)</small></div>`
+              ? `<img src="${esc(proxyImg(thumb))}" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.classList.add('show');">
+                 <div class="img-fallback"><span class="icon">🚫</span>이미지 로드 실패<br><small>(URL 만료 가능)</small></div>`
               : `<div class="img-fallback show"><span class="icon">🖼️</span>썸네일 없음</div>`
             }
           </div>
