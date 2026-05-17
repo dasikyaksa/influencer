@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apify 인스타 실습</title>
+  <style>
+    :root { --teal: #1D9E75; --bg: #0d1117; --card: #161b22; --line: #1f2530; --muted: #8b949e; --text: #c9d1d9; --danger: #f87171; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Noto Sans KR", sans-serif; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+    h1 { font-size: 24px; margin: 0 0 8px; color: #fff; }
+    .lede { color: var(--muted); margin: 0 0 28px; line-height: 1.6; }
+
+    .step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; margin-bottom: 16px; }
+    .step-num { display: inline-block; background: var(--teal); color: #fff; font-weight: 700;
+                width: 22px; height: 22px; line-height: 22px; text-align: center;
+                border-radius: 50%; font-size: 12px; margin-right: 8px; }
+    .step-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 10px; }
+    .step-body { font-size: 13px; line-height: 1.7; color: var(--text); }
+    .step-body a { color: var(--teal); text-decoration: none; }
+    .step-body a:hover { text-decoration: underline; }
+    .step-body ol, .step-body ul { margin: 8px 0 8px 18px; }
+    .step-body code { background: #0d1117; padding: 1px 6px; border-radius: 4px; font-size: 12px; color: #ffd6a0; }
+
+    .field { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; color: var(--muted); }
+    .field input { background: #0d1117; border: 1px solid #30363d; color: var(--text);
+                   padding: 9px 12px; border-radius: 6px; font-size: 13px; }
+    .field input:focus { outline: none; border-color: var(--teal); }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    .btn { background: var(--teal); color: #fff; border: 0;
+           padding: 10px 18px; border-radius: 7px; cursor: pointer;
+           font-size: 13px; font-weight: 600; }
+    .btn:hover { filter: brightness(1.1); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.ghost { background: #0d1117; color: var(--text); border: 1px solid #30363d; }
+
+    .status { margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--teal); }
+
+    pre.code { background: #0d1117; border: 1px solid var(--line); border-radius: 8px;
+               padding: 14px 16px; font-size: 12px; overflow-x: auto;
+               color: #d2c79f; line-height: 1.6; margin: 10px 0 0; }
+
+    .results { margin-top: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .card { background: #0d1117; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); }
+    .card:hover { border-color: var(--teal); }
+    .card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #1f2530; display: block; }
+    .card .meta { padding: 10px 12px; font-size: 12px; }
+    .card .caption { color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 32px; }
+    .card .stats { margin-top: 6px; color: var(--muted); font-size: 11px; display: flex; gap: 10px; }
+
+    .topnav { padding: 12px 24px; border-bottom: 1px solid var(--line); font-size: 12px; }
+    .topnav a { color: var(--muted); text-decoration: none; margin-right: 14px; }
+    .topnav a:hover { color: var(--teal); }
+  </style>
+</head>
+<body>
+  <div class="topnav">
+    <a href="./dashboard.html">← 대시보드</a>
+    <a href="./study-skills-practice.html">스킬 실습</a>
+    <a href="./study-curriculum.html">커리큘럼</a>
+  </div>
+
+  <div class="wrap">
+    <h1>Apify 인스타 실습</h1>
+    <p class="lede">
+      Apify 의 인스타그램 스크래퍼 Actor 를 호출해 본인 인스타 피드를 가져오는 실습입니다.
+      서버 없이 브라우저에서 직접 Apify API 를 호출하므로,
+      이 파일을 로컬에서 열기만 하면 누구나 자기 토큰으로 실행할 수 있습니다.
+    </p>
+
+    <!-- Step 1: 가입 + 토큰 발급 -->
+    <div class="step">
+      <div class="step-title"><span class="step-num">1</span> Apify 계정 생성 + API 토큰 발급</div>
+      <div class="step-body">
+        <ol>
+          <li><a href="https://console.apify.com/sign-up" target="_blank" rel="noopener">https://console.apify.com/sign-up</a> 에서 계정 만들기 (Google 로그인 가능, 무료 플랜으로 시작)</li>
+          <li>로그인 후 좌측 메뉴 또는 우측 상단 프로필 → <strong>Settings → Integrations</strong> 으로 이동
+            <br>직접 링크: <a href="https://console.apify.com/account/integrations" target="_blank" rel="noopener">console.apify.com/account/integrations</a></li>
+          <li>"Personal API tokens" 섹션의 <strong>API token</strong> 값 복사 (보통 <code>apify_api_</code> 로 시작)</li>
+        </ol>
+        <p class="hint">⚠️ 토큰은 본인 계정의 모든 자원에 접근할 수 있는 키입니다. 다른 사람과 공유하지 말고, 코드/Slack/공개 페이지에 절대 노출하지 마세요.</p>
+      </div>
+    </div>
+
+    <!-- Step 2: 토큰 입력 -->
+    <div class="step">
+      <div class="step-title"><span class="step-num">2</span> 토큰 + 인스타 핸들 입력</div>
+      <div class="step-body">
+        <div class="field">
+          <label for="apify-token">Apify API 토큰</label>
+          <input type="password" id="apify-token" spellcheck="false" placeholder="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="ig-handle">인스타그램 핸들 (예: instagram)</label>
+          <input type="text" id="ig-handle" spellcheck="false" placeholder="ydy_nutrition" autocomplete="off">
+        </div>
+        <p class="hint">두 값 모두 브라우저 localStorage 에 저장됩니다. 공용 PC에서 실습 시 사용 후 [저장 정보 지우기] 를 눌러주세요.</p>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" id="btn-fetch" type="button">📷 인스타 피드 가져오기</button>
+          <button class="btn ghost" id="btn-clear" type="button">저장 정보 지우기</button>
+        </div>
+        <div class="status" id="status">대기 중</div>
+      </div>
+    </div>
+
+    <!-- Step 3: 실행 코드 -->
+    <div class="step">
+      <div class="step-title"><span class="step-num">3</span> 실제로 호출되는 코드</div>
+      <div class="step-body">
+        <p>아래 코드가 [가져오기] 버튼을 누를 때 실행됩니다. Apify Actor <code>apify/instagram-scraper</code> 를 동기 실행하고 결과를 받습니다.</p>
+<pre class="code">const endpoint = `https://api.apify.com/v2/acts/apify~instagram-scraper`
+  + `/run-sync-get-dataset-items?token=${TOKEN}`;
+
+const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    directUrls: [`https://www.instagram.com/${HANDLE}/`],
+    resultsLimit: 30,
+  }),
+});
+
+const posts = await res.json();
+// posts: [{ caption, displayUrl, likesCount, commentsCount, ... }]</pre>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div class="step">
+      <div class="step-title"><span class="step-num">4</span> 결과</div>
+      <div class="results" id="results">
+        <p class="hint">아직 결과가 없습니다. 위에서 [가져오기] 버튼을 눌러주세요.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const TOKEN_KEY = 'apify_demo_token';
+  const HANDLE_KEY = 'apify_demo_handle';
+
+  const tokenEl = document.getElementById('apify-token');
+  const handleEl = document.getElementById('ig-handle');
+  const fetchBtn = document.getElementById('btn-fetch');
+  const clearBtn = document.getElementById('btn-clear');
+  const statusEl = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+
+  // 초기값 복원
+  tokenEl.value = localStorage.getItem(TOKEN_KEY) || '';
+  handleEl.value = localStorage.getItem(HANDLE_KEY) || '';
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  function formatCount(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+  }
+
+  function renderResults(posts) {
+    if (!Array.isArray(posts) || posts.length === 0) {
+      resultsEl.innerHTML = '<p class="hint">포스트가 없습니다. 핸들을 다시 확인해주세요.</p>';
+      return;
+    }
+    resultsEl.innerHTML = '<div class="grid">' + posts.slice(0, 12).map(p => {
+      const url = p.url || (p.shortCode ? 'https://www.instagram.com/p/' + p.shortCode + '/' : '#');
+      const caption = (p.caption || '').slice(0, 120);
+      return `
+        <a class="card" href="${esc(url)}" target="_blank" rel="noopener">
+          <img src="${esc(p.displayUrl || '')}" alt="" onerror="this.style.visibility='hidden'">
+          <div class="meta">
+            <div class="caption">${esc(caption)}</div>
+            <div class="stats">
+              <span>❤️ ${formatCount(p.likesCount)}</span>
+              <span>💬 ${formatCount(p.commentsCount)}</span>
+              ${p.videoViewCount ? `<span>▶️ ${formatCount(p.videoViewCount)}</span>` : ''}
+            </div>
+          </div>
+        </a>
+      `;
+    }).join('') + '</div>';
+  }
+
+  async function fetchInstagram() {
+    const token = tokenEl.value.trim();
+    const handle = handleEl.value.trim().replace(/^@/, '');
+    if (!token) { setStatus('Apify 토큰을 먼저 입력하세요.', 'error'); return; }
+    if (!handle || !/^[A-Za-z0-9._]{1,30}$/.test(handle)) {
+      setStatus('올바른 인스타 핸들을 입력하세요. (영문/숫자/_/.)', 'error');
+      return;
+    }
+    // 저장
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(HANDLE_KEY, handle);
+
+    setStatus('Apify Actor 호출 중... (cold-start 시 30초~1분 걸릴 수 있습니다)');
+    fetchBtn.disabled = true;
+    resultsEl.innerHTML = '<p class="hint">불러오는 중...</p>';
+
+    try {
+      const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-scraper'
+        + '/run-sync-get-dataset-items?token=' + encodeURIComponent(token);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          directUrls: ['https://www.instagram.com/' + handle + '/'],
+          resultsLimit: 30,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error('HTTP ' + res.status + ' — ' + text.slice(0, 200));
+      }
+      const raw = await res.json();
+      const posts = Array.isArray(raw) ? raw : (raw.posts || raw.data || []);
+      setStatus('완료 — 포스트 ' + posts.length + '개', 'ok');
+      renderResults(posts);
+    } catch (e) {
+      setStatus('오류: ' + e.message, 'error');
+      resultsEl.innerHTML = '<p class="hint">호출에 실패했습니다. 토큰이 유효한지, 핸들이 정확한지, 네트워크가 연결되어 있는지 확인하세요.</p>';
+    } finally {
+      fetchBtn.disabled = false;
+    }
+  }
+
+  function clearStorage() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(HANDLE_KEY);
+    tokenEl.value = '';
+    handleEl.value = '';
+    setStatus('저장된 토큰/핸들을 지웠습니다.', 'ok');
+    resultsEl.innerHTML = '<p class="hint">아직 결과가 없습니다.</p>';
+  }
+
+  fetchBtn.addEventListener('click', fetchInstagram);
+  clearBtn.addEventListener('click', clearStorage);
+  </script>
+</body>
+</html>
