@@ -1592,6 +1592,7 @@
     data: null,                  // 마지막 응답 { meta, data }
     loading: false,
     error: null,                 // 'auth' | 'network' | null
+    _reqId: 0,
   };
 
   function buildProductsQuery() {
@@ -1608,6 +1609,7 @@
   }
 
   async function fetchProducts() {
+    const reqId = ++productsState._reqId;
     productsState.loading = true;
     productsState.error = null;
     renderProductsView();
@@ -1616,6 +1618,7 @@
       const res = await fetch(API_BASE + '/api/admin/v2/group-purchases/product-influencers?' + qs, {
         headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + bearerToken },
       });
+      if (reqId !== productsState._reqId) return;
       if (res.status === 401 || res.status === 403) {
         productsState.error = 'auth';
         productsState.loading = false;
@@ -1631,10 +1634,12 @@
         return;
       }
       const json = await res.json();
+      if (reqId !== productsState._reqId) return;
       productsState.data = json;
       productsState.loading = false;
       renderProductsView();
     } catch (e) {
+      if (reqId !== productsState._reqId) return;
       productsState.error = 'network';
       productsState.loading = false;
       renderProductsView();
