@@ -1334,6 +1334,77 @@
       border-radius: 4px;
       font-size: 11px; color: #d8c8a0;
     }
+
+    /* === Instagram TOP 3 grid === */
+    .ig-top3-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    }
+    @media (max-width: 720px) {
+      .ig-top3-grid { grid-template-columns: 1fr; }
+    }
+    .ig-top-card {
+      position: relative;
+      background: #161b22; border: 1px solid #1f2530;
+      border-radius: 12px; overflow: hidden;
+      text-decoration: none; color: #c9d1d9;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      display: flex; flex-direction: column;
+    }
+    .ig-top-card:hover { transform: translateY(-2px); }
+    .ig-top-card.ig-rank-1 {
+      border-color: rgba(255, 215, 0, 0.4);
+      box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.2);
+      background: linear-gradient(180deg, rgba(255, 215, 0, 0.06), #161b22 60%);
+    }
+    .ig-top-card.ig-rank-2 {
+      border-color: rgba(192, 192, 192, 0.35);
+      background: linear-gradient(180deg, rgba(192, 192, 192, 0.05), #161b22 60%);
+    }
+    .ig-top-card.ig-rank-3 {
+      border-color: rgba(205, 127, 50, 0.35);
+      background: linear-gradient(180deg, rgba(205, 127, 50, 0.05), #161b22 60%);
+    }
+    .ig-rank-badge {
+      position: absolute; top: 10px; left: 10px;
+      padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff; font-size: 11px; font-weight: 700;
+      border-radius: 6px; z-index: 2;
+      backdrop-filter: blur(4px);
+    }
+    .ig-top-thumb {
+      width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+      background: #1f2530; display: block;
+    }
+    .ig-top-body {
+      padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+      flex: 1;
+    }
+    .ig-top-caption {
+      font-size: 12px; color: #c9d1d9; line-height: 1.45;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; min-height: 34px;
+    }
+    .ig-top-stats {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      font-size: 11px; color: #8b949e;
+    }
+    .ig-engagement-score {
+      margin-top: auto;
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding-top: 8px; border-top: 1px dashed #1f2530;
+    }
+    .ig-engagement-score .score-label { font-size: 10px; color: #8b949e; }
+    .ig-engagement-score .score-value {
+      font-size: 18px; font-weight: 700; color: var(--teal, #1D9E75);
+      font-variant-numeric: tabular-nums;
+    }
+    .ig-formula-hint {
+      margin-top: 10px; padding: 8px 12px;
+      font-size: 11px; color: #6e7681;
+      background: rgba(255, 255, 255, 0.02); border-radius: 6px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -1681,7 +1752,7 @@
     <!-- Instagram Content Panel -->
     <div class="dash-card" id="ig-panel-card">
       <div class="ig-panel-header">
-        <div class="ig-panel-title">최근 인스타 포스트</div>
+        <div class="ig-panel-title">인스타 인게이지먼트 TOP 3</div>
         <div>
           <span class="ig-panel-meta" id="ig-panel-meta">핸들 미설정</span>
           <button class="ig-handle-btn" id="ig-handle-btn" type="button" style="margin-left:8px">📷 인스타 설정</button>
@@ -2211,6 +2282,16 @@
     return '/api/img-proxy?url=' + encodeURIComponent(url);
   }
 
+  // 인게이지먼트 점수 (likes×1 + comments×3 + views×0.1)
+  // 가중치 근거: 댓글이 좋아요보다 능동적 행동, views 는 절대수 압도적이라 normalize
+  function igEngagement(p) {
+    if (!p) return 0;
+    const likes = Number(p.likesCount) || 0;
+    const comments = Number(p.commentsCount) || 0;
+    const views = Number(p.videoViewCount) || 0;
+    return likes + comments * 3 + views * 0.1;
+  }
+
   function igFormatCount(n) {
     if (typeof n !== 'number' || !isFinite(n)) return '0';
     if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -2262,19 +2343,35 @@
       return;
     }
 
-    wrap.innerHTML = '<div class="ig-grid">' + posts.slice(0, 12).map(p => `
-      <a class="ig-card" href="${igEsc(p.url || '#')}" target="_blank" rel="noopener">
-        <img class="ig-card-thumb" src="${igEsc(igProxyImg(igPickThumb(p)))}" alt="" loading="lazy" onerror="this.style.background='#1f2530'; this.alt='🚫'; this.style.opacity='0.4';">
-        <div class="ig-card-body">
-          <div class="ig-card-caption">${igEsc((p.caption || '').slice(0, 120))}</div>
-          <div class="ig-card-stats">
+    // 인게이지먼트 TOP 3 — 점수 내림차순 정렬 후 상위 3개
+    const top3 = posts
+      .slice()
+      .sort((a, b) => igEngagement(b) - igEngagement(a))
+      .slice(0, 3);
+
+    const rankIcons = ['🥇', '🥈', '🥉'];
+    wrap.innerHTML = '<div class="ig-top3-grid">' + top3.map((p, idx) => {
+      const score = Math.round(igEngagement(p));
+      return `
+      <a class="ig-top-card ig-rank-${idx + 1}" href="${igEsc(p.url || '#')}" target="_blank" rel="noopener">
+        <div class="ig-rank-badge">${rankIcons[idx]} ${idx + 1}위</div>
+        <img class="ig-top-thumb" src="${igEsc(igProxyImg(igPickThumb(p)))}" alt="" loading="lazy" onerror="this.style.background='#1f2530'; this.alt='🚫'; this.style.opacity='0.4';">
+        <div class="ig-top-body">
+          <div class="ig-top-caption">${igEsc((p.caption || '').slice(0, 80))}</div>
+          <div class="ig-top-stats">
             <span class="stat">❤️ ${igFormatCount(p.likesCount)}</span>
             <span class="stat">💬 ${igFormatCount(p.commentsCount)}</span>
             ${p.videoViewCount ? `<span class="stat">▶️ ${igFormatCount(p.videoViewCount)}</span>` : ''}
           </div>
+          <div class="ig-engagement-score">
+            <span class="score-label">인게이지먼트</span>
+            <span class="score-value">${igFormatCount(score)}</span>
+          </div>
         </div>
       </a>
-    `).join('') + '</div>';
+      `;
+    }).join('') + '</div>'
+    + `<div class="ig-formula-hint">점수 = 좋아요 + 댓글×3 + 조회×0.1 &middot; 최근 ${posts.length}개 중 상위 3개</div>`;
 
     updateContentMetrics(posts);
   }
