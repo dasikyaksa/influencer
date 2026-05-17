@@ -1184,6 +1184,16 @@
         <div class="metric-val" id="stat-products">—</div>
         <div class="accent-bar ab-amber"></div>
       </div>
+      <div class="metric-card">
+        <div class="metric-tag">총 제품 구좌</div>
+        <div class="metric-val" id="stat-products-total">—</div>
+        <div class="accent-bar ab-teal"></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-tag">공구 가능 제품</div>
+        <div class="metric-val" id="stat-products-available">—</div>
+        <div class="accent-bar ab-blue"></div>
+      </div>
     </div>
 
     <!-- Charts -->
@@ -1589,9 +1599,15 @@
   let currentView = null;
 
   const VIEW_INITIALIZERS = {
-    dashboard: function initDashboardView() {
-      // 기존 dashboard 콘텐츠는 항상 로드되어 있음
-    },
+    dashboard: (function() {
+      let summaryFetched = false;
+      return function initDashboardView() {
+        if (!summaryFetched) {
+          summaryFetched = true;
+          fetchProductsSummary();
+        }
+      };
+    })(),
     schedule: function initScheduleView() {
       // search-bar / table-area DOM 은 view-schedule 안에 이미 있음.
       // cachedPlans 가 채워져 있다면 (대시보드를 한 번이라도 진입했다면) 현재 검색/필터/정렬 상태로 다시 렌더하면 됨.
@@ -1614,6 +1630,43 @@
     customers: function initPlaceholderView() {},
     consult: function initPlaceholderView() {},
   };
+
+  // === Products Summary (for dashboard metric cards) ===
+  let productsSummary = null;  // { totalCount, availableCount }
+
+  async function fetchProductsSummary() {
+    try {
+      const p = new URLSearchParams();
+      p.set('isExpired', 'false');
+      p.set('sortType', 'LAST_PLAN_ASC');
+      p.set('page', '0');
+      p.set('size', '100');
+      const res = await fetch(API_BASE + '/api/admin/v2/group-purchases/product-influencers?' + p.toString(), {
+        headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + bearerToken },
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (!json || !Array.isArray(json.data)) return;
+      const total = (json.meta && json.meta.totalCount) || 0;
+      const available = json.data.filter(it => it.availableGroupPurchaseProduct === true).length;
+      productsSummary = { totalCount: total, availableCount: available };
+      renderProductsSummary();
+      // sidebar brand 갱신 기회로 같이 활용
+      if (json.data.length > 0) {
+        updateSidebarBrand(json.data[0].influencerName, json.data[0].pharmacyName);
+      }
+    } catch (e) {
+      // silent
+    }
+  }
+
+  function renderProductsSummary() {
+    if (!productsSummary) return;
+    const totalEl = document.getElementById('stat-products-total');
+    const availEl = document.getElementById('stat-products-available');
+    if (totalEl) totalEl.textContent = productsSummary.totalCount;
+    if (availEl) availEl.textContent = productsSummary.availableCount;
+  }
 
   // === Products View ===
   const productsState = {
