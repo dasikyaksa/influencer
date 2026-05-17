@@ -1442,6 +1442,21 @@
       border-radius: 6px;
       font-size: 12px; color: #b8c0ca; line-height: 1.5;
     }
+    /* details/summary 토글 */
+    details.contents-challenge > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      margin: 0; padding: 0;
+    }
+    details.contents-challenge > summary::-webkit-details-marker { display: none; }
+    details.contents-challenge > summary::after {
+      content: '▾'; margin-left: auto;
+      color: #FFB088; font-size: 14px; font-weight: 700;
+      transition: transform 0.15s;
+    }
+    details.contents-challenge[open] > summary::after { transform: rotate(180deg); }
+    details.contents-challenge:not([open]) > summary { margin-bottom: 0; }
+    details.contents-challenge > .challenge-desc { margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -1844,11 +1859,11 @@
             <span class="pv-stat-top" id="pv-stat">—</span>
           </div>
 
-          <div class="contents-challenge">
-            <div class="challenge-head">
+          <details class="contents-challenge">
+            <summary class="challenge-head">
               <span class="challenge-icon">🎯</span>
               <span class="challenge-title">직접 구현해보기 — 약사 전문성 입히기</span>
-            </div>
+            </summary>
             <p class="challenge-desc">
               현재 테이블은 친한스토어 API 가 주는 기본 정보만 보여줍니다. 약사 인플루언서로서 <strong>제품 효능 · 성분 · 복용 가이드</strong> 같은 전문 데이터를 입혀보는 실습 아이디어입니다.
             </p>
@@ -1863,7 +1878,7 @@
             <p class="challenge-hint">
               💡 Claude Code 에 "제품 관리 테이블에 약사 메모 컬럼 추가하고 localStorage 에 저장해줘" 같이 요청하면 빠르게 구현. 데이터가 늘면 별도 <code>functions/api/product-notes</code> 프록시로 옮겨 팀과 공유 가능.
             </p>
-          </div>
+          </details>
 
           <div class="pv-filters">
             <div class="field-inline">
@@ -1941,11 +1956,11 @@
           <p style="margin:0; color:#8b949e; font-size:13px;">약사 인플루언서로서 팔로워를 이해하고 관리하는 실습 아이디어 모음입니다.</p>
         </div>
 
-        <div class="contents-challenge">
-          <div class="challenge-head">
+        <details class="contents-challenge">
+          <summary class="challenge-head">
             <span class="challenge-icon">🎯</span>
             <span class="challenge-title">직접 구현해보기 — 팔로워 실습 과제</span>
-          </div>
+          </summary>
           <p class="challenge-desc">
             인스타 포스트의 <code>comments</code>(Apify 응답) 와 공구 / 이벤트 데이터를 조합해 다음 기능을 만들어보세요.
           </p>
@@ -1959,7 +1974,7 @@
           <p class="challenge-hint">
             💡 Apify <code>apify/instagram-scraper</code> 의 <code>resultsType: "comments"</code> 옵션 또는 별도 <code>apify/instagram-comment-scraper</code> Actor 를 추가하면 댓글 데이터까지 가져올 수 있어요. Claude Code 에 "팔로워 관리 view 에 댓글 작성자 빈도 TOP 20 표 만들어줘" 같이 요청하면 빠르게 프로토타입.
           </p>
-        </div>
+        </details>
       </section>
       <section class="view" id="view-consult">
         <div class="view-placeholder">
@@ -1980,11 +1995,11 @@
         </div>
       </section>
       <section class="view" id="view-contents">
-        <div class="contents-challenge">
-          <div class="challenge-head">
+        <details class="contents-challenge">
+          <summary class="challenge-head">
             <span class="challenge-icon">🎯</span>
             <span class="challenge-title">직접 구현해보기 — 실습 아이디어</span>
-          </div>
+          </summary>
           <p class="challenge-desc">
             아래 데이터로 다음 기능을 한 번 적용해보세요. <code>cachedPosts</code> 또는 <code>instagramState.posts</code> 배열을 활용하면 됩니다.
           </p>
@@ -1997,7 +2012,7 @@
           <p class="challenge-hint">
             💡 Claude Code 에서 <code>/dashboard 의 view-contents 에 키워드 검색 input 과 필터링 로직 추가해줘</code> 같이 요청하면 빠르게 프로토타입 가능
           </p>
-        </div>
+        </details>
 
         <div class="dash-card">
           <div class="ig-panel-header">
