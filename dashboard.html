@@ -1636,7 +1636,7 @@
       const json = await res.json();
       if (reqId !== productsState._reqId) return;
       productsState.data = json;
-      if (json && json.data && json.data.length > 0) updateSidebarBrand(json.data[0].influencerName);
+      if (json && json.data && json.data.length > 0) updateSidebarBrand(json.data[0].influencerName, json.data[0].pharmacyName);
       productsState.loading = false;
       renderProductsView();
     } catch (e) {
@@ -1655,10 +1655,22 @@
     return esc(s == null ? '' : String(s));   // 기존 esc() 재사용
   }
 
-  function updateSidebarBrand(name) {
-    if (!name || typeof name !== 'string') return;
+  function updateSidebarBrand(influencerName, pharmacyName) {
+    const inf = (influencerName || '').toString().trim();
+    const phar = (pharmacyName || '').toString().trim();
+    if (!inf && !phar) return;
+    // "고약사(고상온)" 같이 괄호로 실명이 같이 들어온 경우 괄호 안을 실명으로 사용
+    const parenMatch = inf.match(/\(([^)]+)\)/);
+    const realName = parenMatch ? parenMatch[1].trim() : inf;
+    let display;
+    if (realName && phar && realName !== phar) {
+      display = `${realName} - ${phar}`;
+    } else {
+      display = realName || phar;
+    }
+    if (!display) return;
     const el = document.querySelector('.sidebar-brand');
-    if (el && el.textContent !== name) el.textContent = name;
+    if (el && el.textContent !== display) el.textContent = display;
   }
 
   function renderProductsView() {
@@ -2089,7 +2101,7 @@
       }
 
       cachedPlans = allItems.map(normalizePlanItem);
-      if (cachedPlans.length > 0) updateSidebarBrand(cachedPlans[0].influencerName);
+      if (cachedPlans.length > 0) updateSidebarBrand(cachedPlans[0].influencerName, cachedPlans[0].pharmacyName);
 
       renderAll();
       showToast(cachedPlans.length + '개 공구 데이터를 불러왔습니다.');
