@@ -928,6 +928,69 @@
       padding: 80px 40px; text-align: center; color: #6e7681;
     }
     .view-placeholder h2 { font-size: 24px; margin-bottom: 8px; color: #c9d1d9; }
+
+    /* === Products View === */
+    .pv-wrap { padding: 24px 28px; }
+    .pv-title { font-size: 22px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+    .pv-filters {
+      display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+      padding: 14px 16px; background: #161b22; border: 1px solid #1f2530;
+      border-radius: 8px; margin-bottom: 16px;
+    }
+    .pv-filters .field-inline { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c9d1d9; }
+    .pv-filters input[type="text"] {
+      background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 7px 10px; border-radius: 6px; min-width: 240px; font-size: 13px;
+    }
+    .pv-filters select {
+      background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 7px 10px; border-radius: 6px; font-size: 13px;
+    }
+    .pv-filters label { cursor: pointer; }
+    .pv-radio { display: inline-flex; gap: 10px; }
+    .pv-radio input { accent-color: #2dd4bf; }
+    .pv-table-wrap { position: relative; min-height: 200px; }
+    .pv-table { width: 100%; border-collapse: collapse; }
+    .pv-table th, .pv-table td {
+      padding: 10px 12px; text-align: left; font-size: 13px;
+      border-bottom: 1px solid #1f2530; color: #c9d1d9;
+    }
+    .pv-table th { background: #161b22; color: #8b949e; font-weight: 600; font-size: 12px; letter-spacing: 0.04em; }
+    .pv-table tbody tr { cursor: pointer; }
+    .pv-table tbody tr:hover { background: #161b22; }
+    .pv-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #1f2530; }
+    .pv-product-name { font-weight: 600; color: #fff; }
+    .pv-brand-name { font-size: 11px; color: #8b949e; margin-top: 2px; }
+    .pv-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .pv-badge.ok { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; }
+    .pv-badge.ng { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+    .pv-pagination {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 16px; padding: 12px 4px; font-size: 13px; color: #8b949e;
+    }
+    .pv-pagination button {
+      background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .pv-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pv-loading-overlay {
+      position: absolute; inset: 0; background: rgba(13, 17, 23, 0.65);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: #c9d1d9; gap: 10px;
+    }
+    .pv-spinner {
+      width: 18px; height: 18px; border: 2px solid #30363d; border-top-color: #2dd4bf;
+      border-radius: 50%; animation: pv-spin 0.8s linear infinite;
+    }
+    @keyframes pv-spin { to { transform: rotate(360deg); } }
+    .pv-empty, .pv-error {
+      padding: 60px 20px; text-align: center; color: #8b949e;
+    }
+    .pv-error { color: #f87171; }
+    .pv-empty button, .pv-error button {
+      margin-top: 12px; background: #2dd4bf; color: #0d1117;
+      border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -1161,7 +1224,71 @@
 
   </div>
       </section>
-      <section class="view" id="view-products"></section>
+      <section class="view" id="view-products">
+        <div class="pv-wrap">
+          <div class="pv-title">제품 구좌</div>
+
+          <div class="pv-filters">
+            <div class="field-inline">
+              <input type="text" id="pv-keyword" placeholder="제품명·브랜드·약국 검색" spellcheck="false">
+            </div>
+            <div class="field-inline">
+              공구가능:
+              <span class="pv-radio">
+                <label><input type="radio" name="pv-avail" value=""> 전체</label>
+                <label><input type="radio" name="pv-avail" value="true" checked> 가능</label>
+                <label><input type="radio" name="pv-avail" value="false"> 불가</label>
+              </span>
+            </div>
+            <div class="field-inline">
+              <label><input type="checkbox" id="pv-expired"> 만료 포함</label>
+            </div>
+            <div class="field-inline">
+              정렬:
+              <select id="pv-sort">
+                <option value="LAST_PLAN_ASC" selected>직전 공구일 오래된 순</option>
+                <option value="LAST_PLAN_DESC">직전 공구일 최신순</option>
+                <option value="CREATED_AT_ASC">매핑 등록일 오래된 순</option>
+                <option value="CREATED_AT_DESC">매핑 등록일 최신순</option>
+              </select>
+            </div>
+            <div class="field-inline">
+              페이지 크기:
+              <select id="pv-size">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pv-table-wrap" id="pv-table-wrap">
+            <table class="pv-table">
+              <thead>
+                <tr>
+                  <th style="width:64px"></th>
+                  <th>제품</th>
+                  <th>약국</th>
+                  <th>셀러</th>
+                  <th>직전 공구</th>
+                  <th>다음 공구</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody id="pv-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="pv-pagination">
+            <span id="pv-stat">—</span>
+            <span>
+              <button id="pv-prev" disabled>이전</button>
+              <span id="pv-page-info" style="margin: 0 12px;">1 / 1</span>
+              <button id="pv-next" disabled>다음</button>
+            </span>
+          </div>
+        </div>
+      </section>
       <section class="view" id="view-sellers">
         <div class="view-placeholder">
           <h2>셀러</h2>
