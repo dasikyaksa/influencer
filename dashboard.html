@@ -1162,9 +1162,24 @@
   </div>
       </section>
       <section class="view" id="view-products"></section>
-      <section class="view" id="view-sellers"></section>
-      <section class="view" id="view-sales"></section>
-      <section class="view" id="view-customers"></section>
+      <section class="view" id="view-sellers">
+        <div class="view-placeholder">
+          <h2>셀러</h2>
+          <p>이 메뉴는 준비 중입니다.</p>
+        </div>
+      </section>
+      <section class="view" id="view-sales">
+        <div class="view-placeholder">
+          <h2>매출</h2>
+          <p>이 메뉴는 준비 중입니다.</p>
+        </div>
+      </section>
+      <section class="view" id="view-customers">
+        <div class="view-placeholder">
+          <h2>고객</h2>
+          <p>이 메뉴는 준비 중입니다.</p>
+        </div>
+      </section>
     </main>
   </div>
 </div>
@@ -1416,6 +1431,41 @@
     location.reload();
   };
 
+  // === View Router ===
+  const VALID_VIEWS = ['dashboard', 'products', 'sellers', 'sales', 'customers'];
+  let currentView = null;
+
+  const VIEW_INITIALIZERS = {
+    dashboard: function initDashboardView() {
+      // 기존 dashboard 콘텐츠는 항상 로드되어 있음
+    },
+    products: function initProductsView() { /* Task 4-6 에서 채움 */ },
+    sellers: function initPlaceholderView() {},
+    sales: function initPlaceholderView() {},
+    customers: function initPlaceholderView() {},
+  };
+
+  function showView(name) {
+    if (!VALID_VIEWS.includes(name)) name = 'dashboard';
+    if (currentView === name) return;
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+      el.classList.toggle('active', el.dataset.view === name);
+    });
+    currentView = name;
+  }
+
+  function router() {
+    const hash = (location.hash.replace('#', '') || 'dashboard');
+    const name = VALID_VIEWS.includes(hash) ? hash : 'dashboard';
+    showView(name);
+    const init = VIEW_INITIALIZERS[name];
+    if (typeof init === 'function') init();
+  }
+
+  window.addEventListener('hashchange', router);
+
   // ── 2FA ──
 
   async function send2faCode() {
@@ -1519,6 +1569,7 @@
     updateTimestamp();
     setInterval(updateTimestamp, 1000);
     loadAllData();
+    router();
   }
 
   // ── API ──
