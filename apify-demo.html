@@ -158,6 +158,17 @@
     }
     .loading-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
     .loading-stage { font-size: 11px; color: var(--teal); margin-top: 2px; }
+
+    .img-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; background: #1f2530; }
+    .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-fallback {
+      position: absolute; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 11px; background: #1f2530;
+      flex-direction: column; gap: 4px; padding: 8px; text-align: center;
+    }
+    .img-fallback.show { display: flex; }
+    .img-fallback .icon { font-size: 20px; opacity: 0.6; }
   </style>
 </head>
 <body>
@@ -322,11 +333,24 @@ const posts = await res.json();
     `;
   }
 
+  function pickThumb(p) {
+    return p.displayUrl
+        || (Array.isArray(p.images) && p.images[0])
+        || p.thumbnailSrc
+        || p.thumbnail
+        || p.imageUrl
+        || (Array.isArray(p.childPosts) && p.childPosts[0] && p.childPosts[0].displayUrl)
+        || '';
+  }
+
   function renderResults(posts, fetchedAt) {
     if (!Array.isArray(posts) || posts.length === 0) {
       resultsEl.innerHTML = '<p class="hint">포스트가 없습니다. 핸들을 다시 확인해주세요.</p>';
       return;
     }
+    // 디버깅: 첫 응답 객체를 콘솔에 출력해 필드명 확인 가능
+    try { console.log('[apify-demo] sample post:', posts[0]); } catch (e) {}
+
     const summaryHtml = renderSummary(posts, fetchedAt);
     const gridHtml = '<div class="grid">' + posts.slice(0, 12).map(p => {
       const url = p.url || (p.shortCode ? 'https://www.instagram.com/p/' + p.shortCode + '/' : '#');
@@ -336,9 +360,16 @@ const posts = await res.json();
                    p.type === 'Sidecar' ? '🖼️ 다중' :
                    p.type === 'Image' ? '📷 이미지' :
                    p.productType === 'clips' ? '🎞️ 릴스' : '';
+      const thumb = pickThumb(p);
       return `
         <a class="card" href="${esc(url)}" target="_blank" rel="noopener">
-          <img src="${esc(p.displayUrl || '')}" alt="" onerror="this.style.visibility='hidden'">
+          <div class="img-wrap">
+            ${thumb
+              ? `<img src="${esc(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.classList.add('show');">
+                 <div class="img-fallback"><span class="icon">🚫</span>이미지 로드 실패<br><small>(인스타 CDN 차단)</small></div>`
+              : `<div class="img-fallback show"><span class="icon">🖼️</span>썸네일 없음</div>`
+            }
+          </div>
           <div class="meta">
             <div class="card-top">
               ${type ? `<span class="type-badge">${esc(type)}</span>` : ''}

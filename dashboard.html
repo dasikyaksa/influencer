@@ -2116,6 +2116,17 @@
 
   function igEsc(s) { return esc(s == null ? '' : String(s)); }
 
+  function igPickThumb(p) {
+    if (!p) return '';
+    return p.displayUrl
+        || (Array.isArray(p.images) && p.images[0])
+        || p.thumbnailSrc
+        || p.thumbnail
+        || p.imageUrl
+        || (Array.isArray(p.childPosts) && p.childPosts[0] && p.childPosts[0].displayUrl)
+        || '';
+  }
+
   function igFormatCount(n) {
     if (typeof n !== 'number' || !isFinite(n)) return '0';
     if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -2169,7 +2180,7 @@
 
     wrap.innerHTML = '<div class="ig-grid">' + posts.slice(0, 12).map(p => `
       <a class="ig-card" href="${igEsc(p.url || '#')}" target="_blank" rel="noopener">
-        <img class="ig-card-thumb" src="${igEsc(p.displayUrl || '')}" alt="" onerror="this.style.visibility='hidden'">
+        <img class="ig-card-thumb" src="${igEsc(igPickThumb(p))}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.background='#1f2530'; this.style.position='relative'; this.alt='🚫'; this.style.opacity='0.4';">
         <div class="ig-card-body">
           <div class="ig-card-caption">${igEsc((p.caption || '').slice(0, 120))}</div>
           <div class="ig-card-stats">
@@ -2248,7 +2259,7 @@
       const url = p.url || (p.shortCode ? 'https://www.instagram.com/p/' + p.shortCode + '/' : '#');
       return `
         <a class="ig-card" href="${igEsc(url)}" target="_blank" rel="noopener">
-          <img class="ig-card-thumb" src="${igEsc(p.displayUrl || '')}" alt="" onerror="this.style.visibility='hidden'">
+          <img class="ig-card-thumb" src="${igEsc(igPickThumb(p))}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.background='#1f2530'; this.style.position='relative'; this.alt='🚫'; this.style.opacity='0.4';">
           <div class="ig-card-body">
             <div style="display:flex; justify-content:space-between; font-size:10px; color:#8b949e; margin-bottom:4px;">
               <span>${igEsc(type)}</span><span>${igEsc(date)}</span>
@@ -2299,6 +2310,7 @@
       const raw = await res.json();
       const posts = Array.isArray(raw) ? raw : (raw.posts || raw.data || []);
       const fetchedAt = Date.now();
+      try { if (posts[0]) console.log('[instagram] sample post:', posts[0]); } catch (e) {}
       instagramState.posts = posts;
       instagramState.fetchedAt = fetchedAt;
       instagramState.loading = false;
