@@ -267,3 +267,5 @@ DOM 측면에서 각 view 는 `<section id="view-{name}" hidden>` 로 감싸고 
 - 제품 구좌의 수정/액션 (불가 사유 입력, 활성 토글 등)
 - 인플루언서/브랜드/셀러/담당자 ID 기반 필터 (응답에 ID 노출 후 진행)
 - `study-skills-practice.html` 에 superpowers 플러그인 설치 가이드 추가 (별도 브레인스토밍)
+  - 학생이 개별 과제 진행 시 brainstorming 스킬을 활용하도록 안내
+  - 설치 후 제공되는 각 스킬에 대한 한 줄 설명 포함 (예: `brainstorming` — 아이디어를 대화로 정제해 설계로, `writing-plans` — 스펙을 실행 가능한 단계로 분해 등)
