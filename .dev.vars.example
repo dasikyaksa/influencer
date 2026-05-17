@@ -1,0 +1,14 @@
+# Cloudflare Pages Functions 로컬 환경변수 템플릿
+# 사용법:
+#   1. 이 파일을 `.dev.vars` 로 복사 (cp .dev.vars.example .dev.vars)
+#   2. 아래 값을 본인의 실제 값으로 채워 넣기
+#   3. `.dev.vars` 는 .gitignore 에 포함되어 있어 커밋되지 않음
+#
+# 프로덕션(Cloudflare Pages)에서는 대시보드 > 프로젝트 > Settings > Environment variables 에 동일 키로 등록하세요.
+
+# study.html → functions/api/study-submit.js 에서 호출하는 Google Apps Script 배포 URL
+STUDY_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
+
+# Apify API token (https://console.apify.com/account/integrations)
+# 인스타그램 스크래퍼(apify/instagram-scraper) 호출용. 인플루언서 인스타 피드 조회.
+APIFY_TOKEN=apify_api_YOUR_TOKEN_HERE

@@ -91,6 +91,17 @@ CLOUDFLARE_API_TOKEN=<토큰> npm run deploy
 > `npm run deploy` 스크립트는 `--project-name=influencer` 로 고정되어 있습니다.
 > 본인의 Cloudflare Pages 프로젝트명에 맞게 `package.json` 의 `scripts.deploy` 값을 수정해서 사용하세요.
 
+### Apify 인스타그램 연동 (선택)
+
+대시보드의 "이번 달 컨텐츠 / 누적 조회" metric 과 "최근 인스타 포스트" panel 은 [Apify](https://apify.com) 의 `apify/instagram-scraper` Actor 를 통해 본인 인스타 피드를 가져옵니다.
+
+1. [Apify console](https://console.apify.com/account/integrations) 에서 API 토큰 발급
+2. `.dev.vars` 에 `APIFY_TOKEN=apify_api_xxx` 추가 (로컬 개발)
+3. 프로덕션은 Cloudflare Pages 대시보드 > Settings > Environment variables 에 동일 키 등록
+4. 대시보드 우측 상단 "📷 인스타 설정" 버튼에서 본인 인스타 핸들 입력 (localStorage 저장)
+
+토큰을 설정하지 않으면 컨텐츠 metric 카드는 "—" 로 유지되고 panel 은 안내 메시지를 표시합니다.
+
 ### 4. 사용법
 
 1. 페이지 상단에 **API 키**와 **스프레드시트 URL** 입력
