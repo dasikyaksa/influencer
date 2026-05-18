@@ -197,63 +197,42 @@
       </div>
     </div>
 
-    <!-- Step 3: 핵심 스킬 -->
+    <!-- Step 3: 핵심 스킬 (비개발자 / 바이브 코딩 레벨) -->
     <div class="step">
-      <div class="step-title"><span class="step-num">3</span> 핵심 스킬 한눈에</div>
+      <div class="step-title"><span class="step-num">3</span> 핵심 스킬 4개 — 바이브 코딩 레벨</div>
       <div class="step-body">
-        <p>가장 자주 쓰는 10개. 슬래시 명령을 그대로 입력하면 Claude 가 해당 워크플로로 진입합니다.</p>
+        <p>개발자가 아니어도 바로 쓸 수 있는 핵심 4개입니다. 슬래시 명령을 그대로 입력하면 Claude 가 해당 흐름으로 진입합니다.</p>
         <div class="skill-grid">
+
           <div class="skill-card">
             <div class="cmd">/superpowers:brainstorming</div>
-            <div class="desc">막연한 아이디어를 대화로 정제해 설계 스펙으로 만듭니다.</div>
-            <div class="when"><b>언제:</b> 새 기능 추가 직전, 무엇을 만들지 명확하지 않을 때</div>
+            <div class="desc"><b>① 아이디어 정리</b> — 머릿속 막연한 아이디어를 Claude 와 대화하며 구체적인 설계로 만듭니다. Claude 가 질문 하나씩 던지면서 빠진 부분을 채워줍니다.</div>
+            <div class="when"><b>이럴 때:</b> "이런 기능 만들고 싶은데 어떻게 시작할지 모르겠어"<br><b>예시 prompt:</b> <code>/superpowers:brainstorming 댓글 키워드 분석 기능을 추가하고 싶어</code></div>
           </div>
+
           <div class="skill-card">
             <div class="cmd">/superpowers:writing-plans</div>
-            <div class="desc">스펙을 task-by-task 실행 계획서로 분해합니다.</div>
-            <div class="when"><b>언제:</b> 스펙은 있지만 어떤 순서로 손댈지 정할 때</div>
+            <div class="desc"><b>② 만들 순서 정하기</b> — 정리된 아이디어를 "1단계 → 2단계 → 3단계" 식으로 작은 작업으로 쪼개 계획서를 만듭니다. 한 번에 다 안 만들고 단계별로.</div>
+            <div class="when"><b>이럴 때:</b> 아이디어는 정해졌는데 어디부터 손대야 할지 막막할 때<br><b>예시:</b> brainstorming 직후 자동 연결됨</div>
           </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:executing-plans</div>
-            <div class="desc">계획을 단계별로 실행하면서 체크포인트마다 검증합니다.</div>
-            <div class="when"><b>언제:</b> 계획서가 준비된 뒤, 실제 코드 변경을 시작할 때</div>
-          </div>
+
           <div class="skill-card">
             <div class="cmd">/superpowers:subagent-driven-development</div>
-            <div class="desc">task 마다 새 subagent 를 띄워 분업하고, 2단계 review 까지 자동.</div>
-            <div class="when"><b>언제:</b> 독립적인 task 가 여러 개 있는 큰 작업</div>
+            <div class="desc"><b>③ 실제로 만들기</b> — 계획서를 작은 task 로 나눠 Claude 가 알아서 하나씩 만들고, 각 task 마다 자기 작업을 두 번 검증합니다. 비개발자가 가장 안심하고 맡길 수 있는 흐름.</div>
+            <div class="when"><b>이럴 때:</b> writing-plans 로 계획서가 준비된 뒤 실제 코드를 만들 차례<br><b>대안:</b> 더 간단한 작업이면 <code>/superpowers:executing-plans</code></div>
           </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:test-driven-development</div>
-            <div class="desc">실패하는 테스트 → 최소 구현 → 통과 → 리팩터링 순서.</div>
-            <div class="when"><b>언제:</b> 새 함수/모듈에 명확한 입출력이 있을 때</div>
-          </div>
+
           <div class="skill-card">
             <div class="cmd">/superpowers:systematic-debugging</div>
-            <div class="desc">가설 → 검증 → 수정 순서로 체계적으로 버그를 추적합니다.</div>
-            <div class="when"><b>언제:</b> 원인 모를 버그, 재현 불안정한 이슈</div>
+            <div class="desc"><b>④ 안 될 때 원인 찾기</b> — 뭔가 작동 안 하거나 이상할 때 Claude 가 "추측" 대신 "가설 → 확인 → 수정" 순서로 원인을 차근차근 추적합니다.</div>
+            <div class="when"><b>이럴 때:</b> "왜 안 되는지 모르겠는데 자꾸 엉뚱한 수정만 함" 같은 상황<br><b>예시 prompt:</b> <code>/superpowers:systematic-debugging 댓글 panel 이 새로고침 시 비어 보임</code></div>
           </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:using-git-worktrees</div>
-            <div class="desc">격리된 git worktree 에서 안전하게 실험합니다.</div>
-            <div class="when"><b>언제:</b> 본 작업과 분리해서 위험한 변경을 시도할 때</div>
-          </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:verification-before-completion</div>
-            <div class="desc">"완료" 라고 말하기 전에 실제 명령을 돌려 증거를 확보합니다.</div>
-            <div class="when"><b>언제:</b> 커밋/PR 직전, "다 됐다" 라고 보고하기 전</div>
-          </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:requesting-code-review</div>
-            <div class="desc">작업 마무리 전에 self-review 를 강제로 진행합니다.</div>
-            <div class="when"><b>언제:</b> PR 올리기 직전 또는 큰 작업 종료 시점</div>
-          </div>
-          <div class="skill-card">
-            <div class="cmd">/superpowers:writing-skills</div>
-            <div class="desc">본인만의 새 스킬을 직접 만들고 검증합니다.</div>
-            <div class="when"><b>언제:</b> 자주 반복하는 본인만의 작업 패턴이 보이기 시작할 때</div>
-          </div>
+
         </div>
+
+        <p style="margin-top:18px; font-size:12px; color:var(--muted);">
+          📌 그 외 개발자용 스킬 (test-driven-development, using-git-worktrees, requesting-code-review, writing-skills 등) 은 코드 깊게 만지기 시작할 때 차츰 활용. 비개발자가 처음부터 다 알 필요는 없습니다.
+        </p>
       </div>
     </div>
 
