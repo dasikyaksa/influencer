@@ -2017,6 +2017,7 @@
             <li><strong>자주 쓰는 해시태그 모아보기</strong> — 캡션에서 <code>#태그</code> 추출 + 빈도순 TOP 10 (워드 클라우드 / 막대 차트)</li>
             <li><strong>시간대 · 요일 분석</strong> — <code>timestamp</code> 로 어느 요일·시간대에 올린 포스트의 반응이 좋은지</li>
             <li><strong>공구 매출 기여도 측정</strong> — <code>일정 관리</code> 의 공구 plan(<code>title</code>·<code>brand</code>·<code>totalSales</code>) 과 인스타 캡션 키워드를 매칭, 컨텐츠가 어느 공구 매출에 기여했는지 추정</li>
+            <li><strong>프로필 · 팔로워 수 가져오기</strong> — Apify Actor <code>apify/instagram-profile-scraper</code> 로 본인 프로필 (<code>followersCount</code>·<code>followsCount</code>·<code>postsCount</code>·<code>biography</code>) 조회 후 dashboard metric 카드로 노출. 호출 body: <code>{ usernames: ['핸들'] }</code></li>
           </ul>
           <p class="challenge-hint">
             💡 Claude Code 에서 <code>/dashboard 의 view-contents 에 키워드 검색 input 과 필터링 로직 추가해줘</code> 같이 요청하면 빠르게 프로토타입 가능
