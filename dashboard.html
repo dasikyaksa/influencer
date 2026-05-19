@@ -1684,7 +1684,7 @@
         </div>
         <div class="info-row">
           <span class="info-tag local">💾 로컬 저장</span>
-          <span>로그인 토큰·인스타 핸들·금액 마스킹 설정 등은 본인 브라우저에만 저장됩니다. 서버나 외부로 전송되지 않습니다.</span>
+          <span>로그인 토큰·인스타 아이디·금액 마스킹 설정 등은 본인 브라우저에만 저장됩니다. 서버나 외부로 전송되지 않습니다.</span>
         </div>
         <div class="info-note">
           ⚠️ 모든 매출/공구 데이터는 본인 계정에 매핑된 것만 표시됩니다. 다른 인플루언서의 데이터는 보이지 않습니다.
@@ -1817,12 +1817,12 @@
       <div class="ig-panel-header">
         <div class="ig-panel-title">인스타 인게이지먼트 TOP 3</div>
         <div>
-          <span class="ig-panel-meta" id="ig-panel-meta">핸들 미설정</span>
+          <span class="ig-panel-meta" id="ig-panel-meta">아이디 미설정</span>
           <button class="ig-handle-btn" id="ig-handle-btn" type="button" style="margin-left:8px">📷 인스타 설정</button>
         </div>
       </div>
       <div id="ig-grid-wrap">
-        <div class="ig-empty">인스타 핸들을 설정하면 최근 포스트가 표시됩니다.</div>
+        <div class="ig-empty">인스타 아이디를 설정하면 최근 포스트가 표시됩니다.</div>
       </div>
     </div>
 
@@ -1996,22 +1996,23 @@
         <details class="contents-challenge">
           <summary class="challenge-head">
             <span class="challenge-icon">🎯</span>
-            <span class="challenge-title">직접 구현해보기 — 이벤트 당첨자 관리 실습 과제</span>
+            <span class="challenge-title">직접 만들어보기 — 구글 시트를 그대로 대시보드에서 보기</span>
           </summary>
           <p class="challenge-desc">
-            대시보드 안에서 <strong>이벤트별 당첨자 목록</strong> 을 직접 조회·관리할 수 있도록 만들어보세요. Google Apps Script 가 시트에 저장한 응답 데이터를 <code>functions/api/study-submit.js</code> 와 비슷한 패턴으로 가져오면 됩니다.
+            이벤트 응답 데이터는 <strong>구글 시트(Google Sheets)</strong> 에 자동으로 쌓입니다. 응답자가 이벤트 폼을 작성하면 → Google Apps Script 가 즉시 시트에 한 줄을 추가해요. 지금까지는 그 시트를 열거나 별도 관리자 페이지로 봤다면, 이제 <strong>그 시트를 대시보드 안으로 그대로 끌어와</strong> 표·카드·검색 같은 걸로 편하게 보여주는 게 이번 실습입니다.
           </p>
           <ul class="challenge-list">
-            <li><strong>이벤트 목록 panel</strong> — 진행 중·종료된 이벤트별 카드 (이벤트명 · 시작/종료일 · 응답 수 · 당첨자 수 · 발송 상태)</li>
-            <li><strong>이벤트별 당첨자 명단</strong> — 행 클릭 시 모달로 이름·연락처·배송지·인스타 핸들·당첨 상품 표시</li>
-            <li><strong>중복 응답 검출</strong> — 같은 휴대폰 번호/인스타 핸들 중복 응답 자동 표시 (한 사람이 여러 번 응답)</li>
-            <li><strong>당첨 추첨 도구</strong> — 응답자 풀에서 N명 랜덤 추첨 + 가중치 (예: 팔로워 · 댓글 빈도) 부여 옵션</li>
-            <li><strong>사은품 매핑</strong> — 당첨자별 어떤 제품을 보낼지 매핑 (제품 구좌 view 의 데이터와 연계)</li>
-            <li><strong>배송 상태 추적</strong> — 발송 전 / 발송중 / 도착 단계 토글 + 일괄 변경</li>
-            <li><strong>일괄 내보내기</strong> — CSV / 엑셀로 배송 라벨 또는 택배 신청 양식 생성</li>
+            <li><strong>구글 시트와 연결</strong> — 응답 시트에 새 줄이 추가되면 대시보드도 자동으로 따라 보이게</li>
+            <li><strong>이벤트별 카드 만들기</strong> — 시트 데이터를 이벤트 단위로 묶어 카드로 표시 (이벤트명 · 응답자 수 · 당첨자 수)</li>
+            <li><strong>당첨자 명단 한눈에 보기</strong> — 카드 클릭 시 시트의 그 이벤트 행만 모아 이름·연락처·배송지 표시</li>
+            <li><strong>중복 응답 자동 찾기</strong> — 같은 사람이 여러 번 신청한 줄을 시트에서 자동으로 골라 표시</li>
+            <li><strong>내 양식으로 CSV 내보내기</strong> — 시트의 데이터를 자주 쓰는 택배 신청 양식·배송 라벨 컬럼으로 바로 다운로드</li>
           </ul>
           <p class="challenge-hint">
-            💡 첫 단계는 "이벤트 목록 panel" 부터. Claude Code 에 <code>view-customers 에 이벤트별 카드 목록을 만들어줘. 데이터는 Google Sheets 에서 가져오는 functions/api/event-list.js 프록시 신규 추가</code> 같이 plan-mode 로 진입한 뒤 brainstorming → writing-plans 흐름 권장. <code>event-admin.html</code> 의 기존 Apps Script 코드를 참고하면 빠르게 이식 가능.
+            💡 <strong>왜 구글 시트?</strong> 익숙하니까. 코딩 없이 시트에서 열어보고, 직접 셀을 고치고, 색깔 입히고, 필터도 쓸 수 있어요. 대시보드는 그 시트를 "예쁘게 보여주는 창" 역할만 합니다. 데이터의 진짜 주인은 항상 시트입니다.<br><br>
+            <strong>Claude Code 에 이렇게 요청해보세요</strong> (그대로 복붙해도 됩니다):<br><br>
+            <code style="display:block; padding:8px 12px; background:rgba(0,0,0,0.35); border-radius:4px; line-height:1.6; color:#ffd6a0;">대시보드의 "이벤트 당첨자 관리" 메뉴 안에 구글 시트(이벤트 응답 저장용)의 내용을 카드 + 표로 보여주는 화면을 만들어줘. 데이터는 지금 이벤트 관리자 페이지(event-admin.html)가 쓰는 같은 구글 시트에서 Google Apps Script 를 통해 가져오면 돼.</code><br>
+            막막하면 <strong><code>Shift+Tab</code> 으로 plan 모드 진입</strong> 후 위 요청을 그대로 던지면 Claude 가 단계별 계획부터 차근차근 보여줍니다.
           </p>
         </details>
       </section>
@@ -2049,7 +2050,7 @@
                 ▸ 이미지: <code>profilePicUrl</code> · <code>profilePicUrlHD</code> (프로필 사진)<br>
                 ▸ 텍스트: <code>fullName</code> · <code>biography</code> · <code>externalUrl</code> (자기소개 + 링크)<br>
                 ▸ 배지/속성: <code>verified</code> · <code>private</code> · <code>isBusinessAccount</code> · <code>businessCategoryName</code><br>
-                ▸ 호출 body: <code>{ usernames: ['핸들'] }</code><br>
+                ▸ 호출 body: <code>{ usernames: ['아이디'] }</code><br>
                 ▸ 활용 아이디어: dashboard 상단에 프로필 카드 (사진 + 이름 + 자기소개 + 팔로워 수) / 사이드바 brand 영역에 프로필 사진 / 인증 배지 표시 등
               </span>
             </li>
@@ -2072,13 +2073,13 @@
           <div class="ig-panel-header">
             <div class="ig-panel-title">인스타그램</div>
             <div>
-              <span class="ig-panel-meta" id="contents-meta">핸들 미설정</span>
-              <button class="ig-handle-btn" id="contents-handle-btn" type="button" style="margin-left:8px">📷 핸들/토큰 설정</button>
+              <span class="ig-panel-meta" id="contents-meta">아이디 미설정</span>
+              <button class="ig-handle-btn" id="contents-handle-btn" type="button" style="margin-left:8px">📷 아이디/토큰 설정</button>
             </div>
           </div>
           <div id="contents-summary"></div>
           <div id="contents-grid-wrap">
-            <div class="ig-empty">인스타 핸들과 토큰을 설정하면 컨텐츠가 표시됩니다.</div>
+            <div class="ig-empty">인스타 아이디과 토큰을 설정하면 컨텐츠가 표시됩니다.</div>
           </div>
         </div>
       </section>
@@ -2381,7 +2382,7 @@
     contents: function initContentsView() {
       // Always re-render — if user just updated handle/token elsewhere, reflect it
       renderContentsView();
-      // 핸들/토큰 있고 캐시된 posts 가 없으면 자동 fetch
+      // 아이디/토큰 있고 캐시된 posts 가 없으면 자동 fetch
       if (instagramState.handle && instagramState.token && !instagramState.posts) {
         fetchInstagramContent();
       }
@@ -2472,8 +2473,8 @@
     if (!meta || !wrap) return;
 
     if (!instagramState.handle) {
-      meta.textContent = '핸들 미설정';
-      wrap.innerHTML = '<div class="ig-empty">인스타 핸들을 설정하면 최근 포스트가 표시됩니다.</div>';
+      meta.textContent = '아이디 미설정';
+      wrap.innerHTML = '<div class="ig-empty">인스타 아이디을 설정하면 최근 포스트가 표시됩니다.</div>';
       updateContentMetrics(null);
       return;
     }
@@ -2541,9 +2542,9 @@
     if (!meta || !summary || !wrap) return;
 
     if (!instagramState.handle) {
-      meta.textContent = '핸들 미설정';
+      meta.textContent = '아이디 미설정';
       summary.innerHTML = '';
-      wrap.innerHTML = '<div class="ig-empty">인스타 핸들과 토큰을 설정하면 컨텐츠가 표시됩니다.</div>';
+      wrap.innerHTML = '<div class="ig-empty">인스타 아이디과 토큰을 설정하면 컨텐츠가 표시됩니다.</div>';
       return;
     }
     meta.textContent = '@' + instagramState.handle;
@@ -2663,11 +2664,11 @@
     const curHandle = instagramState.handle || '';
     const curToken = instagramState.token || '';
 
-    const newHandle = prompt('인스타 핸들 (@ 빼고 입력):', curHandle);
+    const newHandle = prompt('인스타 아이디 (@ 빼고 입력):', curHandle);
     if (newHandle === null) return;
     const cleanedHandle = newHandle.trim().replace(/^@/, '');
     if (cleanedHandle && !/^[A-Za-z0-9._]{1,30}$/.test(cleanedHandle)) {
-      showToast('올바른 인스타 핸들 형식이 아닙니다.');
+      showToast('올바른 인스타 아이디 형식이 아닙니다.');
       return;
     }
 

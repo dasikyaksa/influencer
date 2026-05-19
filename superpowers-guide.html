@@ -223,42 +223,53 @@
           <strong>각 슬래시 명령을 차례로 입력</strong>하면 됩니다.</p>
 
         <div class="scenario">
-          <h4>(가) 팔로워 댓글 키워드 분석 기능 추가 <span class="badge">기능 추가</span></h4>
-          <div class="desc">view-customers 에 인스타 댓글의 키워드 빈도 분석을 붙이고 싶다면.</div>
+          <h4>(가) 인스타 프로필 카드 추가하기 <span class="badge">기능 추가</span></h4>
+          <div class="desc">"내 인스타 사진·이름·팔로워 수를 대시보드 메인에 한 칸 넣고 싶어요." — 자주 보는 화면에 내 정체성을 박는 작은 작업.</div>
 <pre class="code">1. /superpowers:brainstorming
-   "view-customers 에 인스타 댓글의 키워드 빈도 분석 기능을
-   추가하고 싶어. 어떤 단어가 자주 나오는지 워드클라우드로 보여주고 싶음."
+   "대시보드 메인 화면 맨 위에 내 인스타 프로필 카드
+   (사진 + 이름 + 자기소개 + 팔로워 수) 를 한 칸 넣고 싶어.
+   어떻게 만들면 좋을지 같이 정리해줘."
+
+   → Claude 가 '데이터는 어디서 가져올까요?', '사진이 안 뜨면
+     어떻게 할까요?' 같은 질문을 하나씩 던집니다. 답만 하면 됨.
 
 2. /superpowers:writing-plans
-   (브레인스토밍에서 합의한 스펙 기반으로 task 계획서 작성)
+   (합의한 내용을 '1단계 → 2단계 → 3단계' 체크리스트로 정리해줌)
 
 3. /superpowers:subagent-driven-development
-   (계획서의 task 를 하나씩 분업 실행 + review)</pre>
+   (체크리스트를 한 줄씩 자동 실행 — 사이사이에 결과 보여줌)</pre>
         </div>
 
         <div class="scenario">
-          <h4>(나) 새 SNS 플랫폼 통합 — YouTube <span class="badge">통합</span></h4>
-          <div class="desc">dashboard 에 YouTube 통계 view 를 추가하고, 핸들 입력 후 자동 호출.</div>
+          <h4>(나) 다른 SNS 정보도 같이 보기 — 유튜브 <span class="badge">통합</span></h4>
+          <div class="desc">"유튜브 구독자 수랑 최근 영상도 대시보드에서 한 번에 보고 싶어요." — 새로운 데이터를 끌어와 카드 한 줄 더 만들기.</div>
 <pre class="code">1. /superpowers:brainstorming
-   "dashboard 에 YouTube 통계 view 를 추가하고 싶어.
-   YouTube Data API v3 사용. 핸들 입력하면 구독자/조회수/최근 영상 표시."
+   "내 유튜브 채널 구독자 수랑 최근 영상 조회 수를 대시보드에
+   같이 보이게 하고 싶어. 어떻게 연결할 수 있을까?"
+
+   → 유튜브 API 키 받는 방법, 채널 아이디 입력받는 자리, 카드 디자인 등
+     실제 단계를 사람 말로 풀어줍니다.
 
 2. /superpowers:writing-plans
-   (API 키 입력 UI, fetch 로직, 카드 렌더, localStorage 캐시 — task 분해)
+   (어떤 순서로 만들지 한 단계씩 정리)
 
 3. /superpowers:executing-plans
-   (사람 체크포인트 거치며 단계별 실행)</pre>
+   (한 단계 끝날 때마다 "계속할까요?" 물어봐서 안심 진행)</pre>
         </div>
 
         <div class="scenario">
-          <h4>(다) 버그 추적 <span class="badge">디버깅</span></h4>
-          <div class="desc">재현이 불안정해서 원인이 모호한 경우.</div>
+          <h4>(다) 가끔 이상한 거 고치기 <span class="badge">디버깅</span></h4>
+          <div class="desc">"가끔 이상해요" — 원인을 모를 때. 어디가 잘못됐는지 같이 찾아주는 시나리오.</div>
 <pre class="code">1. /superpowers:systematic-debugging
-   "fetchProducts 호출 후 가끔 빈 테이블이 떠.
-   네트워크 탭에서 응답은 정상으로 보이는데 원인 모르겠음."
+   "공구 목록 들어가면 가끔 표가 텅 비어요. 새로고침 하면 다시
+   잘 보이는데, 왜 그러는지 모르겠어요."
 
-   → Claude 가 가설을 세우고, 로그/재현 명령으로 검증한 뒤
-     실제 원인을 좁혀가며 수정 PR 까지 제안.</pre>
+   → Claude 가 의심 가는 원인을 하나씩 물어보고, "이 화면에서
+     이런 거 한번 눌러보세요" 식으로 같이 재현해본 다음, 어디가
+     문제인지 찾아내고 어떻게 고칠지 알려줍니다.
+
+※ 다른 예시: "이벤트 응모 폼에서 제출 눌렀는데 멈춤", "사진이
+  안 보임", "당첨자 목록이 두 번 들어감" 같은 모호한 증상에 좋음.</pre>
         </div>
       </div>
     </div>

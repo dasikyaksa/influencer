@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Apify 인스타 실습</title>
+  <title>Apify 기능 실습</title>
   <style>
     :root { --teal: #1D9E75; --bg: #0d1117; --card: #161b22; --line: #1f2530; --muted: #8b949e; --text: #c9d1d9; --danger: #f87171; }
     * { box-sizing: border-box; }
@@ -179,9 +179,54 @@
   </div>
 
   <div class="wrap">
-    <h1>Apify 인스타 실습</h1>
+    <h1>Apify 기능 실습</h1>
     <p class="lede">
-      Apify 의 인스타그램 스크래퍼 Actor 를 호출해 본인 인스타 피드를 가져오는 실습입니다.
+      <strong>Apify</strong> 는 SNS·웹사이트의 공개 데이터를 대신 긁어와 주는 외부 서비스입니다.
+      각 사이트별로 미리 만들어진 <strong>Actor</strong> (작은 자동화 프로그램) 를 호출하면, 결과를 JSON 으로 받아볼 수 있어요.
+    </p>
+
+    <div style="background: #0d1117; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 16px; font-size: 13px; line-height: 1.8;">
+      <div style="font-weight: 600; color: #fff; margin-bottom: 8px;">📡 Apify 가 지원하는 주요 SNS / 플랫폼</div>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong style="color: var(--teal);">Instagram</strong> — 프로필 · 게시물(피드) · 댓글 · 해시태그 · 팔로워/팔로잉</li>
+        <li><strong style="color: var(--teal);">TikTok</strong> — 프로필 · 영상 · 댓글 · 음원 · 해시태그</li>
+        <li><strong style="color: var(--teal);">YouTube</strong> — 채널 · 영상 정보 · 댓글 · 구독자 수 · 검색 결과</li>
+        <li><strong style="color: var(--teal);">X (Twitter)</strong> — 프로필 · 트윗 · 답글 · 좋아요/리트윗 수</li>
+        <li><strong style="color: var(--teal);">Facebook</strong> — 페이지/그룹 게시물 · 댓글 · 광고 라이브러리</li>
+        <li><strong style="color: var(--teal);">Threads</strong> — 프로필 · 게시물 · 답글</li>
+        <li><strong style="color: var(--teal);">LinkedIn</strong> — 회사 · 인물 · 채용 공고</li>
+        <li><strong style="color: var(--teal);">Pinterest</strong> — 핀 · 보드 · 검색 결과</li>
+        <li><strong style="color: var(--teal);">Reddit</strong> — 서브레딧 · 게시물 · 댓글</li>
+        <li><strong style="color: var(--teal);">Google Maps</strong> — 가게 정보 · 리뷰 · 평점 (인플루언서가 약국·매장 리뷰 수집할 때 유용)</li>
+      </ul>
+      <div style="margin-top: 10px; font-size: 12px; color: var(--muted);">※ Actor 마켓플레이스에서 검색하면 더 많이 있습니다 → <a href="https://apify.com/store" target="_blank" rel="noopener" style="color: var(--teal);">apify.com/store</a> · 이 페이지에서는 그중 <strong>인스타그램 컨텐츠 조회</strong> 를 실습합니다.</div>
+    </div>
+
+    <div style="background: #0d1117; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 16px; font-size: 13px; line-height: 1.8;">
+      <div style="font-weight: 600; color: #fff; margin-bottom: 8px;">📦 Apify 인스타그램 Actor 들이 제공하는 기능</div>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong style="color: var(--teal);">프로필 조회</strong> — 이름·자기소개·프로필 사진·팔로워 수·게시물 수·인증 배지 (<code>apify/instagram-profile-scraper</code>)</li>
+        <li><strong style="color: var(--teal);">컨텐츠(피드) 조회</strong> — 최근 게시물 / 좋아요·댓글 수 / 캡션 / 해시태그 / 사진·동영상 URL (<code>apify/instagram-scraper</code>)</li>
+        <li><strong style="color: var(--teal);">댓글 조회</strong> — 특정 게시물에 달린 댓글 본문·작성자·시각 (<code>apify/instagram-comment-scraper</code>)</li>
+        <li><strong style="color: var(--teal);">팔로워 조회</strong> — 팔로워 / 팔로잉 목록 (Apify 별도 Actor 또는 follower-scraper 계열)</li>
+      </ul>
+      <div style="margin-top: 10px; font-size: 12px; color: var(--muted);">※ 이 페이지에서는 그중 가장 자주 쓰는 <strong>컨텐츠(피드) 조회</strong> 를 실습합니다.</div>
+    </div>
+
+    <div style="background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.35); border-radius: 10px; padding: 14px 16px; margin: 0 0 24px; font-size: 13px; line-height: 1.7; color: var(--text);">
+      <div style="font-weight: 700; color: var(--danger); margin-bottom: 6px;">💸 비용이 발생합니다 — 꼭 확인하세요</div>
+      Apify 는 <strong>유료 서비스</strong> 입니다. 가입 시 <strong>월 $5 정도의 무료 크레딧</strong> 이 제공되지만,
+      Actor 를 호출할 때마다 컴퓨팅 시간(CU)·요청 수·트래픽 등에 따라 크레딧이 차감됩니다. 인스타그램 Actor 1회 호출당
+      대략 <strong>$0.005 ~ $0.05 (수십~수백 원)</strong> 수준이며, 데이터 양이 많을수록 더 많이 듭니다.
+      <br><br>
+      <strong>꼭 사용 전 확인 →</strong>
+      <a href="https://apify.com/pricing" target="_blank" rel="noopener" style="color: var(--teal);">apify.com/pricing</a>
+      &nbsp;·&nbsp;
+      <a href="https://console.apify.com/billing" target="_blank" rel="noopener" style="color: var(--teal);">사용량/청구 대시보드</a>
+      <br><span style="font-size: 12px; color: var(--muted);">무료 크레딧을 다 쓰면 자동 결제되지 않고 호출이 멈추도록 "Pay as you go" 모드 기본값을 유지하는 걸 권장합니다.</span>
+    </div>
+
+    <p class="lede" style="margin-top: 0;">
       서버 없이 브라우저에서 직접 Apify API 를 호출하므로,
       이 파일을 로컬에서 열기만 하면 누구나 자기 토큰으로 실행할 수 있습니다.
     </p>
@@ -202,14 +247,14 @@
 
     <!-- Step 2: 토큰 입력 -->
     <div class="step">
-      <div class="step-title"><span class="step-num">2</span> 토큰 + 인스타 핸들 입력</div>
+      <div class="step-title"><span class="step-num">2</span> 토큰 + 인스타 아이디 입력</div>
       <div class="step-body">
         <div class="field">
           <label for="apify-token">Apify API 토큰</label>
           <input type="password" id="apify-token" spellcheck="false" placeholder="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
         </div>
         <div class="field">
-          <label for="ig-handle">인스타그램 핸들</label>
+          <label for="ig-handle">인스타그램 아이디</label>
           <input type="text" id="ig-handle" spellcheck="false" placeholder="yakstory119" autocomplete="off">
           <div class="handle-hint">
             <div class="hint-row">
@@ -351,7 +396,7 @@ const posts = await res.json();
 
   function renderResults(posts, fetchedAt) {
     if (!Array.isArray(posts) || posts.length === 0) {
-      resultsEl.innerHTML = '<p class="hint">포스트가 없습니다. 핸들을 다시 확인해주세요.</p>';
+      resultsEl.innerHTML = '<p class="hint">포스트가 없습니다. 아이디를 다시 확인해주세요.</p>';
       return;
     }
     // 디버깅: 첫 응답 객체를 콘솔에 출력해 필드명 확인 가능
@@ -399,7 +444,7 @@ const posts = await res.json();
     const handle = handleEl.value.trim().replace(/^@/, '');
     if (!token) { setStatus('Apify 토큰을 먼저 입력하세요.', 'error'); return; }
     if (!handle || !/^[A-Za-z0-9._]{1,30}$/.test(handle)) {
-      setStatus('올바른 인스타 핸들을 입력하세요. (영문/숫자/_/.)', 'error');
+      setStatus('올바른 인스타 아이디를 입력하세요. (영문/숫자/_/.)', 'error');
       return;
     }
     // 저장
@@ -464,7 +509,7 @@ const posts = await res.json();
       renderResults(posts, fetchedAt);
     } catch (e) {
       setStatus('오류: ' + e.message, 'error');
-      resultsEl.innerHTML = '<p class="hint">호출에 실패했습니다. 토큰이 유효한지, 핸들이 정확한지, 네트워크가 연결되어 있는지 확인하세요.</p>';
+      resultsEl.innerHTML = '<p class="hint">호출에 실패했습니다. 토큰이 유효한지, 아이디가 정확한지, 네트워크가 연결되어 있는지 확인하세요.</p>';
     } finally {
       clearInterval(loadingTimer);
       fetchBtn.disabled = false;
@@ -477,7 +522,7 @@ const posts = await res.json();
     localStorage.removeItem(POSTS_KEY);
     tokenEl.value = '';
     handleEl.value = '';
-    setStatus('저장된 토큰/핸들/결과를 지웠습니다.', 'ok');
+    setStatus('저장된 토큰/아이디/결과를 지웠습니다.', 'ok');
     resultsEl.innerHTML = '<p class="hint">아직 결과가 없습니다.</p>';
   }
 
