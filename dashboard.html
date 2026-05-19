@@ -1979,7 +1979,18 @@
       <section class="view" id="view-customers">
         <div class="dash-card" style="padding:22px 24px;">
           <h2 style="margin:0 0 6px 0; font-size:22px; color:#fff;">이벤트 당첨자 관리</h2>
-          <p style="margin:0; color:#8b949e; font-size:13px;">약사 인플루언서로서 팔로워를 이해하고 관리하는 실습 아이디어 모음입니다.</p>
+          <p style="margin:0; color:#8b949e; font-size:13px;">이벤트별 당첨자 목록을 한 곳에서 조회·관리합니다. 응답 수집은 <code>event.html</code>, 관리·내보내기는 <code>event-admin.html</code> 에서 진행됩니다.</p>
+        </div>
+
+        <div class="dash-card" style="padding:20px 24px;">
+          <h3 style="margin:0 0 10px 0; font-size:15px; color:#fff;">🔗 현재 사용 가능한 도구</h3>
+          <p style="margin:0 0 12px 0; color:#c9d1d9; font-size:13px; line-height:1.6;">
+            기존에 작성된 이벤트 폼 + 관리자 페이지가 별도 URL 로 운영 중입니다. 응답자가 폼을 작성하면 Google Apps Script 가 시트에 저장하고, 관리자 페이지에서 조회/추첨/내보내기가 가능합니다.
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="./event.html" target="_blank" rel="noopener" style="display:inline-block; padding:8px 14px; background:#0d1117; color:#c9d1d9; border:1px solid #30363d; border-radius:6px; font-size:12px; text-decoration:none;">🎁 이벤트 폼 (응답자용) ↗</a>
+            <a href="./event-admin.html" target="_blank" rel="noopener" style="display:inline-block; padding:8px 14px; background:#2dd4bf; color:#0d1117; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;">🎁 이벤트 관리자 ↗</a>
+          </div>
         </div>
 
         <details class="contents-challenge">
@@ -1988,17 +1999,19 @@
             <span class="challenge-title">직접 구현해보기 — 이벤트 당첨자 관리 실습 과제</span>
           </summary>
           <p class="challenge-desc">
-            인스타 포스트의 <code>comments</code>(Apify 응답) 와 공구 / 이벤트 데이터를 조합해 다음 기능을 만들어보세요.
+            대시보드 안에서 <strong>이벤트별 당첨자 목록</strong> 을 직접 조회·관리할 수 있도록 만들어보세요. Google Apps Script 가 시트에 저장한 응답 데이터를 <code>functions/api/study-submit.js</code> 와 비슷한 패턴으로 가져오면 됩니다.
           </p>
           <ul class="challenge-list">
-            <li><strong>활성 팔로워 TOP 20</strong> — 인스타 포스트 댓글의 작성자(<code>ownerUsername</code>) 를 모아 빈도순 정렬. 자주 댓글 다는 팔로워가 약사님의 핵심 코어 팔로워</li>
-            <li><strong>관심사 키워드 분석</strong> — 댓글 본문에서 자주 등장하는 단어(예: "수면", "면역", "다이어트") 추출 → 약사로서 어떤 컨텐츠를 더 만들지 인사이트</li>
-            <li><strong>이벤트 응답자 ↔ 팔로워 매칭</strong> — <code>event.html</code> 의 당첨자 폼 응답자(인스타 핸들) 가 실제 댓글 활동도 하는 팔로워인지 교차 확인</li>
-            <li><strong>공구 참여 → 매출 기여 팔로워</strong> — 공구 알림 포스트 댓글 단 팔로워 중, 실제 구매로 이어진 사람 비율 (<code>cachedPlans</code> 의 <code>totalSales</code> 와 연계)</li>
-            <li><strong>약사 신뢰 지수</strong> — 팔로워별 재댓글률 × 좋아요 빈도 가중 점수로 "건강 상담 신뢰 지수" 시각화. 약사 컨텐츠의 충성 팔로워 그룹 파악</li>
+            <li><strong>이벤트 목록 panel</strong> — 진행 중·종료된 이벤트별 카드 (이벤트명 · 시작/종료일 · 응답 수 · 당첨자 수 · 발송 상태)</li>
+            <li><strong>이벤트별 당첨자 명단</strong> — 행 클릭 시 모달로 이름·연락처·배송지·인스타 핸들·당첨 상품 표시</li>
+            <li><strong>중복 응답 검출</strong> — 같은 휴대폰 번호/인스타 핸들 중복 응답 자동 표시 (한 사람이 여러 번 응답)</li>
+            <li><strong>당첨 추첨 도구</strong> — 응답자 풀에서 N명 랜덤 추첨 + 가중치 (예: 팔로워 · 댓글 빈도) 부여 옵션</li>
+            <li><strong>사은품 매핑</strong> — 당첨자별 어떤 제품을 보낼지 매핑 (제품 구좌 view 의 데이터와 연계)</li>
+            <li><strong>배송 상태 추적</strong> — 발송 전 / 발송중 / 도착 단계 토글 + 일괄 변경</li>
+            <li><strong>일괄 내보내기</strong> — CSV / 엑셀로 배송 라벨 또는 택배 신청 양식 생성</li>
           </ul>
           <p class="challenge-hint">
-            💡 Apify <code>apify/instagram-scraper</code> 의 <code>resultsType: "comments"</code> 옵션 또는 별도 <code>apify/instagram-comment-scraper</code> Actor 를 추가하면 댓글 데이터까지 가져올 수 있어요. Claude Code 에 "이벤트 당첨자 관리 view 에 댓글 작성자 빈도 TOP 20 표 만들어줘" 같이 요청하면 빠르게 프로토타입.
+            💡 첫 단계는 "이벤트 목록 panel" 부터. Claude Code 에 <code>view-customers 에 이벤트별 카드 목록을 만들어줘. 데이터는 Google Sheets 에서 가져오는 functions/api/event-list.js 프록시 신규 추가</code> 같이 plan-mode 로 진입한 뒤 brainstorming → writing-plans 흐름 권장. <code>event-admin.html</code> 의 기존 Apps Script 코드를 참고하면 빠르게 이식 가능.
           </p>
         </details>
       </section>
