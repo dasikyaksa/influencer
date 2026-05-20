@@ -1473,6 +1473,53 @@
     details.contents-challenge[open] > summary::after { transform: rotate(180deg); }
     details.contents-challenge:not([open]) > summary { margin-bottom: 0; }
     details.contents-challenge > .challenge-desc { margin-top: 12px; }
+
+    /* ── Event Winners (샘플 엑셀 뷰어) ── */
+    .ew-stat-card {
+      background: #0d1117; border: 1px solid #1f2530;
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .ew-stat-label { font-size: 11px; color: #8b949e; letter-spacing: 0.05em; }
+    .ew-stat-value { font-size: 22px; color: #fff; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .ew-stat-sub { font-size: 11px; color: #6e7681; margin-top: 2px; }
+    .ew-stat-card.warn { border-color: rgba(248, 113, 113, 0.35); }
+    .ew-stat-card.warn .ew-stat-value { color: #f87171; }
+
+    .ew-event-card {
+      background: #0d1117; border: 1px solid #1f2530;
+      border-radius: 8px; padding: 12px 14px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ew-event-card:hover { border-color: var(--teal, #1D9E75); }
+    .ew-event-card.active { border-color: var(--teal, #1D9E75); background: rgba(29, 158, 117, 0.08); }
+    .ew-event-card .ew-event-title {
+      font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 6px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ew-event-card .ew-event-meta { font-size: 11px; color: #8b949e; display: flex; gap: 10px; }
+    .ew-event-card .ew-event-meta span b { color: #c9d1d9; font-weight: 600; }
+
+    .ew-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ew-table th, .ew-table td {
+      padding: 10px 8px; text-align: left;
+      border-bottom: 1px solid #1f2530; color: #c9d1d9;
+      white-space: nowrap;
+    }
+    .ew-table th { background: #161b22; color: #8b949e; font-weight: 600; font-size: 11px; letter-spacing: 0.04em; }
+    .ew-table tbody tr:hover { background: #161b22; }
+    .ew-table .ew-event { color: var(--teal, #1D9E75); }
+    .ew-table .ew-addr { max-width: 320px; white-space: normal; color: #8b949e; font-size: 11px; }
+    .ew-table .ew-row-dup { background: rgba(248, 113, 113, 0.05); }
+    .ew-table .ew-row-dup td:first-child::before {
+      content: '⚠'; color: #f87171; margin-right: 4px;
+    }
+    .ew-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .ew-badge.ship-done { background: rgba(45, 212, 191, 0.12); color: #2dd4bf; }
+    .ew-badge.ship-prog { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+    .ew-badge.ship-pending { background: rgba(139, 148, 158, 0.15); color: #8b949e; }
   </style>
 </head>
 <body>
@@ -1866,6 +1913,10 @@
         <button class="filter-btn" data-filter="completed" onclick="handleFilter('completed')">공구종료</button>
         <button class="filter-btn" data-filter="cancelled" onclick="handleFilter('cancelled')">공구취소</button>
       </div>
+      <div class="filter-btns">
+        <button class="btn-sm" onclick="exportExcel()">엑셀</button>
+        <button class="btn-sm" onclick="exportCSV()">CSV</button>
+      </div>
     </div>
 
     <!-- Table -->
@@ -1991,6 +2042,33 @@
             <a href="./event.html" target="_blank" rel="noopener" style="display:inline-block; padding:8px 14px; background:#0d1117; color:#c9d1d9; border:1px solid #30363d; border-radius:6px; font-size:12px; text-decoration:none;">🎁 이벤트 폼 (응답자용) ↗</a>
             <a href="./event-admin.html" target="_blank" rel="noopener" style="display:inline-block; padding:8px 14px; background:#2dd4bf; color:#0d1117; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;">🎁 이벤트 관리자 ↗</a>
           </div>
+        </div>
+
+        <!-- 샘플 엑셀 로더 / 뷰 -->
+        <div class="dash-card ew-card" style="padding:20px 24px;">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+            <div>
+              <h3 style="margin:0 0 4px 0; font-size:15px; color:#fff;">📊 샘플 엑셀로 보는 당첨자 데이터</h3>
+              <p style="margin:0; color:#8b949e; font-size:12px;">
+                파일: <code>data/event-winners-sample.xlsx</code> · 페이지 진입 시 자동 로드
+              </p>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <a href="./data/event-winners-sample.xlsx" download style="padding:6px 12px; background:#0d1117; color:#c9d1d9; border:1px solid #30363d; border-radius:6px; font-size:12px; text-decoration:none;">⬇ 엑셀 원본 다운로드</a>
+              <button class="btn-sm" onclick="reloadEventWinners()">↻ 다시 불러오기</button>
+              <button class="btn-sm" onclick="exportEventWinnersCSV()">CSV 내보내기</button>
+            </div>
+          </div>
+
+          <div id="ew-status" style="font-size:12px; color:#8b949e; margin-bottom:12px;">샘플 엑셀 로딩 중...</div>
+
+          <div id="ew-stats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:14px;"></div>
+
+          <div id="ew-events" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:14px;"></div>
+
+          <input type="text" id="ew-search" placeholder="이름·연락처·인스타·배송지 검색" oninput="renderEventWinners()" style="width:100%; box-sizing:border-box; padding:8px 12px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:13px; margin-bottom:12px;" />
+
+          <div id="ew-table-wrap" style="overflow-x:auto;"></div>
         </div>
 
         <details class="contents-challenge">
@@ -4081,6 +4159,184 @@
     URL.revokeObjectURL(url);
     showToast('CSV 파일을 다운로드합니다.');
   };
+
+  // ── Event Winners (샘플 엑셀) ──
+
+  const EW_FILE = './data/event-winners-sample.xlsx';
+  let ewRecords = null;          // 전체 행
+  let ewSelectedEvent = null;     // 이벤트 카드 클릭 필터
+
+  async function loadEventWinners() {
+    const statusEl = document.getElementById('ew-status');
+    if (!statusEl) return;
+    statusEl.textContent = '샘플 엑셀 로딩 중...';
+    statusEl.style.color = '#8b949e';
+    try {
+      const res = await fetch(EW_FILE);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const buf = await res.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const sheetName = wb.SheetNames[0];
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: '' });
+      if (!aoa.length) throw new Error('시트가 비어 있습니다');
+      const headers = aoa[0].map(h => String(h || '').trim());
+      const rows = aoa.slice(1).filter(r => r.length && (r[0] || r[2]));
+      ewRecords = rows.map(r => {
+        const o = {};
+        headers.forEach((h, i) => { o[h] = r[i] !== undefined && r[i] !== null ? String(r[i]) : ''; });
+        return o;
+      });
+      const fmtTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      statusEl.innerHTML = `✅ 로드 완료 — <b>${ewRecords.length}건</b> · 시트: <code>${esc(sheetName)}</code> · ${fmtTime}`;
+      statusEl.style.color = '#2dd4bf';
+      renderEventWinners();
+    } catch (e) {
+      statusEl.innerHTML = `⚠️ 샘플 엑셀 로드 실패: ${esc(e.message)} — 파일이 <code>data/event-winners-sample.xlsx</code> 에 있는지 확인하세요.`;
+      statusEl.style.color = '#f87171';
+      document.getElementById('ew-stats').innerHTML = '';
+      document.getElementById('ew-events').innerHTML = '';
+      document.getElementById('ew-table-wrap').innerHTML = '';
+    }
+  }
+
+  window.reloadEventWinners = function() { ewSelectedEvent = null; loadEventWinners(); };
+
+  function ewDupPhones() {
+    if (!ewRecords) return new Set();
+    const cnt = {};
+    ewRecords.forEach(r => { const k = r['연락처']; if (k) cnt[k] = (cnt[k] || 0) + 1; });
+    return new Set(Object.keys(cnt).filter(k => cnt[k] > 1));
+  }
+
+  function ewShipBadge(state) {
+    const s = (state || '').replace(/\s/g, '');
+    if (s === '발송완료') return '<span class="ew-badge ship-done">발송완료</span>';
+    if (s === '발송중') return '<span class="ew-badge ship-prog">발송중</span>';
+    if (s === '발송전') return '<span class="ew-badge ship-pending">발송 전</span>';
+    return '<span class="ew-badge ship-pending">' + esc(state || '-') + '</span>';
+  }
+
+  function renderEventWinners() {
+    if (!ewRecords) return;
+
+    const searchEl = document.getElementById('ew-search');
+    const q = (searchEl && searchEl.value || '').trim().toLowerCase();
+    const dups = ewDupPhones();
+
+    // 통계 (전체 기준 — 필터 무관)
+    const total = ewRecords.length;
+    const done = ewRecords.filter(r => r['발송상태'] === '발송완료').length;
+    const inProg = ewRecords.filter(r => r['발송상태'] === '발송중').length;
+    const pending = ewRecords.filter(r => (r['발송상태'] || '').replace(/\s/g, '') === '발송전').length;
+    const dupCount = ewRecords.filter(r => dups.has(r['연락처'])).length;
+
+    document.getElementById('ew-stats').innerHTML = `
+      <div class="ew-stat-card"><div class="ew-stat-label">총 응답</div><div class="ew-stat-value">${total}</div><div class="ew-stat-sub">건</div></div>
+      <div class="ew-stat-card"><div class="ew-stat-label">발송 완료</div><div class="ew-stat-value">${done}</div><div class="ew-stat-sub">${total ? Math.round(done/total*100) : 0}%</div></div>
+      <div class="ew-stat-card"><div class="ew-stat-label">발송 중</div><div class="ew-stat-value">${inProg}</div><div class="ew-stat-sub">${total ? Math.round(inProg/total*100) : 0}%</div></div>
+      <div class="ew-stat-card"><div class="ew-stat-label">발송 전</div><div class="ew-stat-value">${pending}</div><div class="ew-stat-sub">${total ? Math.round(pending/total*100) : 0}%</div></div>
+      <div class="ew-stat-card ${dupCount > 0 ? 'warn' : ''}"><div class="ew-stat-label">중복 응답</div><div class="ew-stat-value">${dupCount}</div><div class="ew-stat-sub">동일 연락처</div></div>
+    `;
+
+    // 이벤트별 카드
+    const byEvent = {};
+    ewRecords.forEach(r => {
+      const k = r['이벤트명'] || '(이벤트명 없음)';
+      if (!byEvent[k]) byEvent[k] = [];
+      byEvent[k].push(r);
+    });
+    const eventNames = Object.keys(byEvent);
+    const cardsHTML = ['<div class="ew-event-card' + (ewSelectedEvent === null ? ' active' : '') + '" onclick="ewSetEventFilter(null)">'
+      + '<div class="ew-event-title">전체 이벤트</div>'
+      + '<div class="ew-event-meta"><span>총 <b>' + total + '</b>건</span><span><b>' + eventNames.length + '</b> 이벤트</span></div>'
+      + '</div>'];
+    eventNames.forEach(name => {
+      const list = byEvent[name];
+      const localDones = list.filter(r => r['발송상태'] === '발송완료').length;
+      const active = ewSelectedEvent === name ? ' active' : '';
+      cardsHTML.push(
+        '<div class="ew-event-card' + active + '" onclick="ewSetEventFilter(' + JSON.stringify(name) + ')">' +
+          '<div class="ew-event-title" title="' + esc(name) + '">' + esc(name) + '</div>' +
+          '<div class="ew-event-meta">' +
+            '<span>응답 <b>' + list.length + '</b></span>' +
+            '<span>완료 <b>' + localDones + '</b></span>' +
+          '</div>' +
+        '</div>'
+      );
+    });
+    document.getElementById('ew-events').innerHTML = cardsHTML.join('');
+
+    // 표 (이벤트 필터 + 검색 적용)
+    let rows = ewRecords;
+    if (ewSelectedEvent !== null) rows = rows.filter(r => r['이벤트명'] === ewSelectedEvent);
+    if (q) {
+      rows = rows.filter(r => {
+        const hay = [r['이름'], r['연락처'], r['인스타아이디'], r['배송지'], r['당첨상품'], r['이벤트명'], r['메모']]
+          .filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    if (!rows.length) {
+      document.getElementById('ew-table-wrap').innerHTML = '<div style="padding:24px; text-align:center; color:#6e7681; font-size:13px;">조건에 맞는 응답이 없습니다.</div>';
+      return;
+    }
+
+    const tbody = rows.map(r => {
+      const isDup = dups.has(r['연락처']);
+      return '<tr class="' + (isDup ? 'ew-row-dup' : '') + '">' +
+        '<td>' + esc(r['이름'] || '') + '</td>' +
+        '<td class="ew-event">' + esc(r['이벤트명'] || '') + '</td>' +
+        '<td>' + esc(r['응답일시'] || '') + '</td>' +
+        '<td>' + esc(r['연락처'] || '') + '</td>' +
+        '<td>' + esc(r['인스타아이디'] || '') + '</td>' +
+        '<td class="ew-addr">' + esc(r['우편번호'] ? '(' + r['우편번호'] + ') ' : '') + esc(r['배송지'] || '') + '</td>' +
+        '<td>' + esc(r['당첨상품'] || '') + '</td>' +
+        '<td>' + ewShipBadge(r['발송상태']) + '</td>' +
+        '<td>' + esc(r['메모'] || '') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    document.getElementById('ew-table-wrap').innerHTML =
+      '<table class="ew-table"><thead><tr>' +
+        '<th>이름</th><th>이벤트</th><th>응답일시</th><th>연락처</th><th>인스타</th><th>배송지</th><th>당첨상품</th><th>발송</th><th>메모</th>' +
+      '</tr></thead><tbody>' + tbody + '</tbody></table>';
+  }
+
+  window.ewSetEventFilter = function(name) {
+    ewSelectedEvent = name;
+    renderEventWinners();
+  };
+
+  window.exportEventWinnersCSV = function() {
+    if (!ewRecords || !ewRecords.length) { showToast('내보낼 데이터가 없습니다.'); return; }
+    const searchEl = document.getElementById('ew-search');
+    const q = (searchEl && searchEl.value || '').trim().toLowerCase();
+    let rows = ewRecords;
+    if (ewSelectedEvent !== null) rows = rows.filter(r => r['이벤트명'] === ewSelectedEvent);
+    if (q) {
+      rows = rows.filter(r => {
+        const hay = [r['이름'], r['연락처'], r['인스타아이디'], r['배송지'], r['당첨상품'], r['이벤트명'], r['메모']]
+          .filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    const headers = ['이벤트명','응답일시','이름','연락처','인스타아이디','우편번호','배송지','당첨상품','발송상태','메모'];
+    const lines = [headers].concat(rows.map(r => headers.map(h => r[h] || ''))).map(r =>
+      r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')
+    );
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '이벤트당첨자_' + getDateStamp() + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('CSV 파일을 다운로드합니다.');
+  };
+
+  // 페이지 로드 시 한 번 로드 (view-customers 진입과 무관하게 백그라운드)
+  setTimeout(() => { try { loadEventWinners(); } catch (e) {} }, 200);
 
   // ── UI Helpers ──
 

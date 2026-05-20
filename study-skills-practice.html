@@ -596,39 +596,109 @@ html, body {
       </div>
 
       <div class="step-card">
-        <div class="step-label">Step 2 — Xcode Command Line Tools 설치</div>
-        <p>Git이 포함된 개발 도구를 설치합니다. 터미널에 아래 명령어를 입력하세요.</p>
+        <div class="step-label">Step 2 — Git 확인 + (필요 시) 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> Git 은 <strong>"코드 우체부 + 백업 + 타임머신"</strong> 입니다. GitHub(인터넷 코드 보관소) 에 있는 이 실습 프로젝트를 내 컴퓨터로 받아오고(clone), 내가 수정한 내용을 다시 GitHub 에 올리는(push) 데 씁니다. 또 "어제 코드로 되돌리기" 같은 변경 이력 관리도 git 이 해줍니다.<br>
+          <span style="color:#888;">(옵션 <code>gh</code> = GitHub CLI: 터미널에서 PR 만들기·이슈 보기 등 더 편한 작업용)</span>
+        </div>
+        <p><strong>먼저 이미 깔려 있는지 확인부터</strong> 합니다.</p>
+        <div class="code-block">
+          <span class="comment"># Git 설치 여부 확인 (필수)</span><br>
+          <span class="command">git</span> <span class="flag">--version</span><br><br>
+          <span class="comment"># GitHub CLI 설치 여부 확인 (선택)</span><br>
+          <span class="command">gh</span> <span class="flag">--version</span>
+        </div>
+        <p style="margin-top:10px;">
+          <strong>✅ git 이 버전을 출력하면 OK</strong> — 예: <code style="font-size:12px; color:#999;">git version 2.43.0</code> → 이 단계 건너뛰세요.<br>
+          <strong>❌ "command not found" 가 나오면 설치 필요</strong> → 아래로 진행.
+        </p>
+
+        <p style="margin-top:14px;"><strong>설치 방법 (Mac 에서는 두 가지 중 하나)</strong></p>
+
+        <p style="margin-top:8px;"><strong>방법 A. Xcode Command Line Tools 로 한꺼번에 (권장)</strong> — git 포함 기본 개발 도구가 다 깔립니다.</p>
         <div class="code-block">
           <span class="command">xcode-select</span> <span class="flag">--install</span>
         </div>
-        <p style="margin-top:8px;">팝업이 뜨면 "설치"를 클릭합니다. 이미 설치되어 있으면 무시해도 됩니다.</p>
+        <p style="margin-top:6px; font-size:12px; color:#888;">팝업 → "설치" 클릭 → 수 분~10분 대기. 완료 후 <code>git --version</code> 으로 재확인.</p>
+
+        <p style="margin-top:14px;"><strong>방법 B. Homebrew 로 git 만 설치</strong> — 이미 Homebrew 가 있고 더 최신 git 을 원하면.</p>
+        <div class="code-block">
+          <span class="command">brew</span> install git
+        </div>
+
+        <p style="margin-top:14px;"><strong>(선택) GitHub CLI 설치</strong> — 터미널에서 PR 만들기·이슈 확인 등에 유용. 이번 실습은 없어도 OK.</p>
+        <div class="code-block">
+          <span class="command">brew</span> install gh
+        </div>
+        <p style="margin-top:6px; font-size:12px; color:#888;">설치 후 <code>gh auth login</code> 으로 GitHub 계정 연결 (Step 7 에서 자세히 다룸).</p>
+
+        <div style="margin-top:14px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6;">
+          ⚠️ <strong><code>brew: command not found</code> 가 나오면?</strong>
+          Homebrew 자체가 아직 안 깔린 상태입니다.
+          <a href="#homebrew-install" style="color:#FF6B35; font-weight:600; text-decoration:underline;">↓ Homebrew 설치 안내로 이동</a>
+          하여 먼저 Homebrew 를 설치한 뒤 위 명령을 다시 실행하세요.
+        </div>
       </div>
 
       <div class="step-card">
         <div class="step-label">Step 3 — Node.js 설치</div>
-        <p><a href="https://nodejs.org" target="_blank" style="color:#FF6B35;">nodejs.org</a>에서 LTS 버전을 다운로드하여 설치합니다.</p>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> Node.js 는 <strong>다른 도구들이 그 위에 깔려서 돌아가는 "바탕"</strong> 이에요. 이번 실습의 거의 모든 도구(로컬 서버 · Claude Code · 패키지들)가 Node.js 위에서 돕니다. <strong>Node.js 가 없으면 그 위 도구들은 시작도 못 해요.</strong>
+          <br><br>
+          <span style="color:#666;">📱 휴대폰에 비유하면: <strong>iOS · Android 같은 운영체제</strong> 가 있어야 카카오톡 · 인스타 같은 앱이 깔리고 돌아갑니다. Node.js 가 우리 실습 도구들의 그 "운영체제" 역할이에요.</span>
+        </div>
+
+        <p><strong>먼저 이미 깔려 있는지 확인부터.</strong></p>
         <div class="code-block">
-          <span class="comment"># 설치 확인</span><br>
+          <span class="comment"># Node.js 가 이미 깔려 있는지 확인</span><br>
           <span class="command">node</span> <span class="flag">--version</span><br>
           <span class="command">npm</span> <span class="flag">--version</span>
         </div>
-        <div class="tip">
-          <strong>Homebrew 사용자:</strong> <code>brew install node</code>로도 설치 가능합니다.<br>
-          <strong>Homebrew 가 아직 없다면 (M 계열 Mac):</strong> 아래 명령으로 먼저 설치
+        <p style="margin-top:8px;">
+          <strong>✅ 버전이 나오면 OK</strong> — 예: <code style="font-size:12px; color:#999;">v22.14.0</code> → 이 단계 건너뛰세요.<br>
+          <strong>❌ "command not found" 가 나오면 설치 필요</strong> → 아래 두 방법 중 하나로 설치.
+        </p>
+
+        <p style="margin-top:14px;"><strong>방법 A. 공식 사이트에서 받아 클릭 설치 (가장 쉬움)</strong></p>
+        <ol style="margin-top:4px; padding-left:20px; font-size:13px; line-height:1.7;">
+          <li><a href="https://nodejs.org" target="_blank" style="color:#FF6B35;">nodejs.org</a> 접속 → <strong>LTS</strong> 버전 다운로드</li>
+          <li>받은 <code>.pkg</code> 파일 더블클릭 → "다음" 누르며 진행</li>
+          <li>설치 끝나면 터미널 다시 열고 <code>node --version</code> 으로 확인</li>
+        </ol>
+
+        <p style="margin-top:14px;"><strong>방법 B. Homebrew 로 설치 (터미널 명령 한 줄)</strong></p>
+        <div class="code-block">
+          <span class="command">brew</span> install node
+        </div>
+        <p style="margin-top:6px; font-size:12px; color:#888;">설치 후 <code>node --version</code> · <code>npm --version</code> 으로 확인.</p>
+
+        <div style="margin-top:14px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6;">
+          ⚠️ <strong><code>brew: command not found</code> 가 나오면?</strong>
+          Homebrew 자체가 아직 안 깔린 상태입니다.
+          <a href="#homebrew-install" style="color:#FF6B35; font-weight:600; text-decoration:underline;">↓ Homebrew 설치 안내로 이동</a>
+          하여 먼저 Homebrew 를 깔고 다시 <code>brew install node</code> 를 실행하세요. 그게 귀찮으면 위 <strong>방법 A</strong> 로 진행해도 됩니다.
+        </div>
+
+        <div class="tip" id="homebrew-install" style="scroll-margin-top: 80px; margin-top:18px;">
+          <strong>📦 Homebrew 설치 (Mac 의 패키지 관리자)</strong> — <code>brew</code> 명령이 안 될 때 먼저 깔아야 하는 도구.
           <div class="code-block" style="margin-top:8px;">
             <span class="comment"># Homebrew 설치 (공식)</span><br>
             /bin/bash -c <span class="flag">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span><br><br>
-            <span class="comment"># 설치 후 (Apple Silicon) — Homebrew 를 PATH 에 추가</span><br>
+            <span class="comment"># 설치 후 (Apple Silicon M1/M2/M3) — Homebrew 를 PATH 에 추가</span><br>
             <span class="command">echo</span> <span class="flag">'eval "$(/opt/homebrew/bin/brew shellenv)"'</span> &gt;&gt; ~/.zprofile<br>
             <span class="command">eval</span> <span class="flag">"$(/opt/homebrew/bin/brew shellenv)"</span><br><br>
             <span class="comment"># 설치 확인</span><br>
             <span class="command">brew</span> <span class="flag">--version</span>
           </div>
+          <p style="margin-top:6px; font-size:12px; color:#666;">Homebrew = Mac 에서 명령어 한 줄로 다양한 개발 도구를 깔게 해주는 "앱 스토어" 같은 도구. 한 번 깔아두면 두고두고 씁니다.</p>
         </div>
       </div>
 
       <div class="step-card">
         <div class="step-label">Step 4 — Claude Code 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> <strong>이번 실습의 주인공</strong>. AI(Claude) 가 내 컴퓨터에서 직접 코드를 읽고 · 쓰고 · 실행할 수 있게 해주는 터미널 도구예요. "이 화면에 카드 하나 추가해줘", "왜 이게 안 돼?" 같은 말을 그냥 한국어로 입력하면 Claude 가 알아서 코드를 만들고 고치고 실행합니다. 본인이 코딩을 직접 안 해도 결과물이 나옵니다.
+        </div>
         <p>터미널에서 Claude Code CLI를 설치합니다.</p>
         <div class="code-block">
           <span class="command">npm</span> install <span class="flag">-g</span> @anthropic-ai/claude-code
@@ -703,6 +773,9 @@ html, body {
 
       <div class="step-card">
         <div class="step-label">Step 8 — Wrangler 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> Wrangler 는 이 실습 사이트가 운영되고 있는 <strong>Cloudflare 의 공식 도구</strong> 입니다. 내 컴퓨터에서 실제 서비스와 똑같은 환경(로컬 서버)을 띄워주고, 작업 끝나면 <strong>"실제 인터넷에 배포"</strong> 하는 일도 같은 도구가 해줍니다. 한마디로 <strong>"내 컴퓨터 ↔ 실제 인터넷 서비스" 를 연결해주는 다리</strong> 라고 보면 됩니다.
+        </div>
         <p>먼저 프로젝트 의존성을 설치한 다음, Cloudflare의 <strong>Wrangler</strong> CLI 를 설치합니다.</p>
         <div class="code-block">
           <span class="command">npm</span> install<br>
@@ -848,6 +921,9 @@ html, body {
 
       <div class="step-card">
         <div class="step-label">Step 3 — Node.js 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> Node.js 는 자바스크립트로 만든 도구들이 내 컴퓨터에서 돌아가게 해주는 <strong>"엔진"</strong> 입니다. 이번 실습에서 쓸 거의 모든 도구 — 로컬 서버(wrangler), Claude Code, <code>npm</code> 으로 깔 다른 패키지들 — 이 전부 Node.js 위에서 돕니다. <strong>Node.js 가 없으면 그 위에 있는 도구들도 깔리지도, 돌아가지도 않아요.</strong> 자동차의 엔진이라고 보면 됩니다.
+        </div>
         <p><a href="https://nodejs.org" target="_blank" style="color:#FF6B35;">nodejs.org</a>에서 LTS 버전을 다운로드하여 설치합니다.</p>
         <div class="code-block">
           <span class="comment"># 설치 후 터미널을 다시 열고 확인</span><br>
@@ -859,6 +935,9 @@ html, body {
 
       <div class="step-card">
         <div class="step-label">Step 4 — Claude Code 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> <strong>이번 실습의 주인공</strong>. AI(Claude) 가 내 컴퓨터에서 직접 코드를 읽고 · 쓰고 · 실행할 수 있게 해주는 터미널 도구예요. "이 화면에 카드 하나 추가해줘", "왜 이게 안 돼?" 같은 말을 그냥 한국어로 입력하면 Claude 가 알아서 코드를 만들고 고치고 실행합니다. 본인이 코딩을 직접 안 해도 결과물이 나옵니다.
+        </div>
         <p>터미널에서 Claude Code CLI를 설치합니다.</p>
         <div class="code-block">
           <span class="command">npm</span> install <span class="flag">-g</span> @anthropic-ai/claude-code
@@ -923,6 +1002,9 @@ html, body {
 
       <div class="step-card">
         <div class="step-label">Step 7 — Wrangler 설치</div>
+        <div style="margin-bottom:10px; padding:10px 14px; background:#FFF7E6; border-left:3px solid #FF6B35; border-radius:4px; font-size:13px; line-height:1.6; color:#333;">
+          💡 <strong>왜 필요해요?</strong> Wrangler 는 이 실습 사이트가 운영되고 있는 <strong>Cloudflare 의 공식 도구</strong> 입니다. 내 컴퓨터에서 실제 서비스와 똑같은 환경(로컬 서버)을 띄워주고, 작업 끝나면 <strong>"실제 인터넷에 배포"</strong> 하는 일도 같은 도구가 해줍니다. 한마디로 <strong>"내 컴퓨터 ↔ 실제 인터넷 서비스" 를 연결해주는 다리</strong> 라고 보면 됩니다.
+        </div>
         <p>먼저 프로젝트 의존성을 설치한 다음, Cloudflare의 <strong>Wrangler</strong> CLI 를 설치합니다.</p>
         <div class="code-block">
           <span class="command">npm</span> install<br>
@@ -1075,6 +1157,20 @@ html, body {
       <strong>핵심 포인트:</strong> 대시보드는 파마브로스 공동구매의 <strong>백엔드 API</strong> 에서 실시간으로 데이터를 받아와 화면에 보여줍니다.
     </div>
 
+    <div style="margin: 16px 0 20px; padding: 16px 18px; background: #FFF7E6; border: 1px solid #FFD79E; border-radius: 8px;">
+      <div style="font-weight: 700; color: #FF6B35; font-size: 14px; margin-bottom: 8px;">🚀 공구 대시보드 바로 열기</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="http://localhost:8788/dashboard" target="_blank" rel="noopener" style="display: inline-block; padding: 9px 16px; background: #FF6B35; color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">💻 로컬 대시보드 열기 ↗</a>
+        <a href="https://influencer-p68.pages.dev/dashboard" target="_blank" rel="noopener" style="display: inline-block; padding: 9px 16px; background: #0d1117; color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">🌐 프로덕션 대시보드 열기 ↗</a>
+      </div>
+      <div style="margin-top: 10px; font-size: 12px; color: #666; line-height: 1.6;">
+        • <strong>로컬</strong> 은 <code>npm run dev</code> 로 서버가 떠 있어야 동작 (실습 환경 — 코드 수정 즉시 반영)<br>
+        • <strong>프로덕션</strong> 은 항상 떠 있는 실서비스 (이미 main 브랜치에 배포된 최신본)<br>
+        • 처음 진입 시 파마브로스 공동구매 어드민 ID/PW + Slack 2FA 코드 입력<br>
+        • 로그인 성공 시 통계 카드 · 차트 · 공구 테이블이 표시되며, 테이블에서 <strong>공구를 클릭</strong>하면 상세 정보(인플루언서 · 셀러 · 옵션 · 일별 매출)를 확인할 수 있습니다.
+      </div>
+    </div>
+
     <h3><span class="step-icon">🎯</span> 실습 목표</h3>
     <ul class="checklist">
       <li>대시보드가 외부 API 에서 어떤 데이터를 받아오는지 이해한다</li>
@@ -1096,19 +1192,7 @@ html, body {
     <h3><span class="step-icon">🔨</span> 실습 과정</h3>
 
     <div class="step-card">
-      <div class="step-label">실습 2-A — 대시보드 접속 및 로그인</div>
-      <p>브라우저에서 대시보드에 접속하고 로그인합니다:</p>
-      <div class="code-block">
-        <span class="comment"># 브라우저에서 접속</span><br>
-        <span class="url">http://localhost:8788/dashboard</span><br><br>
-        <span class="comment"># 호스트가 제공한 계정으로 로그인</span>
-      </div>
-      <p style="margin-top:8px;">로그인 성공 시 통계 카드, 차트, 공구 테이블이 표시됩니다.</p>
-      <p style="margin-top:4px;">테이블에서 <strong>공구를 클릭</strong>하면 상세 정보(인플루언서, 셀러, 옵션, 일별 매출)를 확인할 수 있습니다.</p>
-    </div>
-
-    <div class="step-card">
-      <div class="step-label">실습 2-B — Swagger로 API 스키마 확인</div>
+      <div class="step-label">실습 2-A — Swagger로 API 스키마 확인</div>
       <p>API 응답 구조를 Swagger에서 확인하는 방법을 실습합니다. Swagger 페이지를 <strong>스크린캡처</strong>하여 Claude Code에 붙여넣고 질문합니다:</p>
       <div class="code-block">
         <span class="comment"># Swagger 페이지 캡처를 붙여넣은 후:</span><br>
@@ -1121,7 +1205,7 @@ html, body {
     </div>
 
     <div class="step-card">
-      <div class="step-label">실습 2-C — 대시보드 커스터마이징</div>
+      <div class="step-label">실습 2-B — 대시보드 커스터마이징</div>
       <p>대시보드에서 수정하고 싶은 영역을 <strong>스크린캡처</strong>하여 Claude Code에 붙여넣고 요청합니다:</p>
       <div class="code-block">
         <span class="comment"># 차트 영역 캡처를 붙여넣은 후:</span><br>
