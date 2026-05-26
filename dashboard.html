@@ -2371,6 +2371,7 @@
               <button class="btn-sm consult-filter-btn" data-status="important" onclick="setConsultFilter('important')">⭐ 중요</button>
             </div>
             <button class="btn-sm" onclick="exportConsultsExcel()">📥 엑셀</button>
+            <button class="btn-sm" onclick="clearAllConsults()" title="모든 상담 기록 삭제 (되돌릴 수 없음)" style="border-color:#7f1d1d; color:#fca5a5;">🗑 전체 삭제</button>
           </div>
         </div>
 
@@ -2529,11 +2530,20 @@
 
         <!-- 검색 폼 -->
         <div class="dash-card" style="padding:20px 24px;">
-          <div style="display:grid; grid-template-columns: 1fr 180px 120px auto; gap:10px; align-items:end;">
+          <div style="display:grid; grid-template-columns: 1fr 140px 140px 110px auto; gap:10px; align-items:end;">
             <div>
               <label style="font-size:11px; color:#8b949e; font-weight:700; display:block; margin-bottom:4px;">검색어</label>
               <input type="text" id="ig-search-query" placeholder="예) YDY뉴트리션, #한독테라큐, #오메가3"
                 style="width:100%; box-sizing:border-box; padding:9px 12px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:14px;">
+            </div>
+            <div>
+              <label style="font-size:11px; color:#8b949e; font-weight:700; display:block; margin-bottom:4px;">정렬</label>
+              <select id="ig-search-sort"
+                style="width:100%; box-sizing:border-box; padding:9px 12px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:13px;">
+                <option value="top" selected>인기 (Top)</option>
+                <option value="recent">최근 (Recent)</option>
+                <option value="mixed">전체 (혼합)</option>
+              </select>
             </div>
             <div>
               <label style="font-size:11px; color:#8b949e; font-weight:700; display:block; margin-bottom:4px;">기간</label>
@@ -3005,6 +3015,30 @@
     },
     'ig-search': function initIgSearchView() {
       try { renderIgSearchHistory(); renderIgSearchResults(); } catch (e) { /* later defined */ }
+      // 폼 값 복원 — last form → current 순서
+      try {
+        let formState = null;
+        try {
+          const raw = localStorage.getItem('ig_search_last_form');
+          if (raw) formState = JSON.parse(raw);
+        } catch (e) {}
+        if (!formState) {
+          try {
+            const cur = (typeof loadIgSearchCurrent === 'function') ? loadIgSearchCurrent() : null;
+            if (cur && cur.query) formState = { query: cur.query, days: cur.days };
+          } catch (e) {}
+        }
+        if (formState) {
+          const q = document.getElementById('ig-search-query');
+          const rangeEl = document.getElementById('ig-search-range');
+          const maxEl = document.getElementById('ig-search-max');
+          const sortEl = document.getElementById('ig-search-sort');
+          if (q && formState.query != null) q.value = formState.query;
+          if (rangeEl && formState.days) rangeEl.value = String(formState.days);
+          if (maxEl && formState.maxCount) maxEl.value = String(formState.maxCount);
+          if (sortEl && formState.sort) sortEl.value = String(formState.sort);
+        }
+      } catch (e) {}
     },
     'threads-search': function initThreadsSearchView() {
       try { renderThreadsSearchHistory(); renderThreadsSearchResults(); } catch (e) { /* later defined */ }
@@ -5215,6 +5249,28 @@
     renderConsultList();
   };
 
+  window.clearAllConsults = function() {
+    const arr = loadConsults();
+    if (!arr.length) { alert('삭제할 상담 기록이 없습니다.'); return; }
+    // 2단계 확인 — 실수 방지
+    if (!confirm(`정말로 모든 상담 기록(${arr.length}건)을 삭제할까요?\n\n이 작업은 되돌릴 수 없습니다.`)) return;
+    const phrase = prompt('확인을 위해 "삭제" 를 입력해주세요. (취소하려면 비워두기)');
+    if ((phrase || '').trim() !== '삭제') { alert('취소되었습니다.'); return; }
+    saveConsults([]);
+    // 검색/필터도 초기화
+    try { document.getElementById('consult-search').value = ''; } catch (e) {}
+    consultStatusFilter = '';
+    try {
+      document.querySelectorAll('.consult-filter-btn').forEach(b => {
+        if (!b.dataset.status) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    } catch (e) {}
+    renderConsultStats();
+    renderConsultList();
+    if (typeof showToast === 'function') showToast(`✅ ${arr.length}건 모두 삭제 완료`);
+  };
+
   window.setConsultFilter = function(status) {
     consultStatusFilter = status || '';
     document.querySelectorAll('.consult-filter-btn').forEach(b => {
@@ -5915,6 +5971,7 @@
   var IG_SEARCH_HISTORY_KEY = 'ig_search_history';
   var IG_SEARCH_CURRENT_KEY = 'ig_search_current';
   var IG_SEARCH_MODE_KEY = 'ig_search_mode';
+  var IG_LAST_FORM_KEY = 'ig_search_last_form'; // { query, days, maxCount } — reload 후 폼 복원
   var IG_SNAPSHOTS_KEY = 'ig_search_snapshots';
   var _igSearchMode = localStorage.getItem(IG_SEARCH_MODE_KEY) || 'ultra';
 
@@ -6093,6 +6150,7 @@
     if (!queryRaw) { alert('검색어를 입력해주세요. (예: #오늘도맑아연, 비타민D)'); return; }
     const days = parseInt(document.getElementById('ig-search-range').value, 10) || 14;
     let maxCount = parseInt(document.getElementById('ig-search-max').value, 10) || 10;
+    const sortMode = (document.getElementById('ig-search-sort') || {}).value || 'top'; // top | recent | mixed
     // 빠른 모드는 최대 6 강제
     if (_igSearchMode === 'fast' && maxCount > 6) {
       maxCount = 6;
@@ -6192,30 +6250,55 @@
 \`\`\`js
 (async function(){
   const MAX=${maxCount};
+  const SORT='${sortMode}';
+  // IG 해시태그 페이지: 첫 9~12개 = Top, 그 뒤 = Recent. 최근순일 때는 Top 스킵.
+  const SKIP_TOP = (SORT === 'recent') ? 12 : 0;
+  // 더 많이 수집해서 정렬 후 잘라냄 (recent 모드에서 충분히 후보 확보)
+  const OVER_FETCH = (SORT === 'recent') ? Math.max(MAX*2, 20) : MAX;
   const out=[],seen=new Set();
   const sel='a[href*="/p/"], a[href*="/reel/"]';
   function harvest(){
+    let domIdx=0;
     for(const a of document.querySelectorAll(sel)){
-      if(out.length>=MAX)return;
+      domIdx++;
+      if(out.length>=OVER_FETCH)return;
       const h=a.href.split('?')[0];if(seen.has(h)||!/\\/(p|reel)\\//.test(h))continue;seen.add(h);
+      if(domIdx<=SKIP_TOP)continue; // recent 모드는 첫 12개 skip
       const img=a.querySelector('img');
       const thumb=img?img.src:'';
       const mediaType=/\\/reel\\//.test(h)?'reel':(a.querySelector('video,svg[aria-label*="Carousel"]')?'carousel':'photo');
-      const alt=img?(img.getAttribute('alt')||''):'';
-      out.push({url:h,author:'',date:'',thumbnail:thumb,thumbnailDataUrl:'',caption:alt.slice(0,200),likes:0,comments:0,mediaType});
+      const alt=img?(img.getAttribute('alt')||a.getAttribute('aria-label')||img.getAttribute('title')||''):'';
+      let authorName='',dateText='';
+      const m=alt.match(/(?:Photo|Video|Reel|이미지|동영상|릴스|사진)\\s*(?:by|·|—|,)\\s*([^,]+?)(?:\\s+on\\s+|\\s*·\\s*|\\s*—\\s*)(.+?)\\.?$/i);
+      if(m){authorName=m[1].trim();dateText=m[2].trim();}
+      else{
+        const m2=alt.match(/(?:Photo|Video|Reel|이미지|동영상|릴스|사진)\\s*(?:by|·)\\s*([^.,·—]+)/i);
+        if(m2)authorName=m2[1].trim();
+      }
+      let caption=alt;
+      const rest=alt.replace(/(?:Photo|Video|Reel|이미지|동영상|릴스|사진)\\s*(?:by|·).+$/i,'').trim();
+      if(rest&&rest.length>20)caption=rest;
+      // 날짜 ISO 변환 — "April 24, 2022" / "January 18, 2026" 등
+      let dateIso='';
+      try{const d=new Date(dateText);if(!isNaN(d.getTime()))dateIso=d.toISOString().slice(0,10);}catch(e){}
+      out.push({url:h,author:authorName,displayName:authorName,date:dateIso||dateText,thumbnail:thumb,thumbnailDataUrl:'',caption:caption.slice(0,200),likes:0,comments:0,mediaType});
     }
   }
-  // 페이징 — MAX 채울 때까지 스크롤 + 재추출 반복
+  // 페이징 — over-fetch 만큼 스크롤 + 재추출 반복
   let stall=0,last=0;
-  for(let i=0;i<20&&out.length<MAX;i++){
+  for(let i=0;i<25&&out.length<OVER_FETCH;i++){
     harvest();
-    if(out.length>=MAX)break;
+    if(out.length>=OVER_FETCH)break;
     if(out.length===last){stall++;if(stall>=2)break;}else{stall=0;}
     last=out.length;
     window.scrollTo(0,document.body.scrollHeight);
     await new Promise(r=>setTimeout(r,700));
   }
-  const payload=JSON.stringify({query:"${queryRaw}",days:${days},since:"${sinceStr}",until:"${today}",mode:"ultra",posts:out.slice(0,MAX)});
+  // 정렬 — recent 모드만 date 내림차순 (날짜 모르는 건 뒤로)
+  if(SORT==='recent'){
+    out.sort((a,b)=>{const da=a.date||'';const db=b.date||'';if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1;return db.localeCompare(da);});
+  }
+  const payload=JSON.stringify({query:"${queryRaw}",days:${days},since:"${sinceStr}",until:"${today}",mode:"ultra",sort:"${sortMode}",posts:out.slice(0,MAX)});
   try{await navigator.clipboard.writeText(payload);}catch(e){}
   // base64 인코딩된 문자열을 반환 — Claude 가 이걸로 dashboard URL 만들어 navigate
   const b64=btoa(unescape(encodeURIComponent(payload)));
@@ -6279,6 +6362,8 @@ ${isFast ? fastBody : accurateBody}
     // 요청 시각 기록 — receiveInstagramResults 에서 소요 시간 계산용
     window._igLastRequestedAt = Date.now();
     try { localStorage.setItem('ig_search_requested_at', String(window._igLastRequestedAt)); } catch (e) {}
+    // 페이지 reload 후 폼 복원용 — query/days/maxCount/sort 저장
+    try { localStorage.setItem(IG_LAST_FORM_KEY, JSON.stringify({ query: queryRaw, days: days, maxCount: maxCount, sort: sortMode })); } catch (e) {}
     showIgSearchCommandDialog(cmd);
     showIgSearchPending();
   };
@@ -6606,24 +6691,32 @@ ${isFast ? fastBody : accurateBody}
       <div style="font-size:10px; opacity:0.8; text-shadow:0 1px 2px rgba(0,0,0,0.3);">${isDataUrl ? '' : '스냅샷 없음'}</div>
       ${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noopener" style="font-size:11px; color:#fff; text-decoration:none; padding:4px 12px; background:rgba(0,0,0,0.35); border-radius:12px; margin-top:4px; backdrop-filter:blur(4px);">인스타에서 보기 ↗</a>` : ''}
     </div>`;
+    const authorText = (p.author || '').trim() || (p.displayName || '').trim() || '@unknown';
+    const authorInitial = (authorText.replace(/^@/, '').charAt(0) || '?').toUpperCase();
     return `<div style="background:#0d1117; border:1px solid #1f2530; border-radius:10px; overflow:hidden; display:flex; flex-direction:column;">
+      <!-- 상단 작성자 헤더 (썸네일 위) -->
+      <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:#161b22; border-bottom:1px solid #1f2530;">
+        <div style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:${gradient}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff;">${esc(authorInitial)}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; font-weight:600; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${esc(authorText)}">${esc(authorText)}</div>
+          ${p.date ? `<div style="font-size:10px; color:#8b949e;">${esc(p.date)}</div>` : ''}
+        </div>
+        <span style="font-size:14px; flex-shrink:0;" title="${esc(p.mediaType || '')}">${mediaIcon}</span>
+      </div>
+      <!-- 썸네일 -->
       <div style="position:relative; width:100%; aspect-ratio:1/1; background:${gradient};">
         ${thumbUrl
           ? `<img src="${esc(thumbUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">${fallbackHtml}`
           : fallbackHtml.replace("display:none", "display:flex")}
-        <span style="position:absolute; top:6px; right:6px; padding:2px 8px; background:rgba(0,0,0,0.7); color:#fff; border-radius:10px; font-size:11px; z-index:2;">${mediaIcon}</span>
         ${isDataUrl ? `<span style="position:absolute; top:6px; left:6px; padding:2px 6px; background:rgba(45,212,191,0.85); color:#0d1117; border-radius:8px; font-size:10px; font-weight:700; z-index:2;" title="Claude 가 캡처한 스냅샷">📸</span>` : ''}
       </div>
+      <!-- 본문 + 메트릭 -->
       <div style="padding:10px 12px; display:flex; flex-direction:column; gap:6px; flex:1;">
-        <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
-          <strong style="color:#c9d1d9;">${esc(p.author || '@unknown')}</strong>
-          <span style="color:#6e7681; font-size:11px; margin-left:auto;">${esc(p.date || '')}</span>
-        </div>
         <div style="font-size:12px; color:#8b949e; line-height:1.4; white-space:pre-wrap; word-break:break-word; flex:1;">${esc(caption)}${(p.caption||'').length > 200 ? '…' : ''}</div>
         <div style="display:flex; gap:10px; font-size:11px; color:#8b949e; padding-top:6px; border-top:1px solid #1f2530;">
-          <span title="좋아요">❤ ${igFormatCount(likes)}</span>
-          <span title="댓글">💬 ${igFormatCount(comments)}</span>
-          ${views > 0 ? `<span title="조회">👁 ${igFormatCount(views)}</span>` : ''}
+          <span title="좋아요"><span style="color:#ef4444;">❤</span> ${igFormatCount(likes)}</span>
+          <span title="댓글"><span style="color:#38bdf8;">💬</span> ${igFormatCount(comments)}</span>
+          ${views > 0 ? `<span title="조회"><span style="color:#a3a3a3;">👁</span> ${igFormatCount(views)}</span>` : ''}
           ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener" style="margin-left:auto; color:#2dd4bf; text-decoration:none;">원본 ↗</a>` : ''}
         </div>
       </div>
@@ -6659,7 +6752,29 @@ ${isFast ? fastBody : accurateBody}
   };
 
   // 페이지 로드 시 1회 — 캐시된 결과 있으면 자동 표시 (view 진입 후)
-  setTimeout(() => { try { renderIgSearchHistory(); renderIgSearchResults(); } catch (e) {} }, 200);
+  setTimeout(() => {
+    try { renderIgSearchHistory(); renderIgSearchResults(); } catch (e) {}
+    // 폼 값 복원 (라우터 진입 전이라도)
+    try {
+      let formState = null;
+      const raw = localStorage.getItem(IG_LAST_FORM_KEY);
+      if (raw) formState = JSON.parse(raw);
+      if (!formState) {
+        const cur = loadIgSearchCurrent();
+        if (cur && cur.query) formState = { query: cur.query, days: cur.days };
+      }
+      if (formState) {
+        const q = document.getElementById('ig-search-query');
+        const rangeEl = document.getElementById('ig-search-range');
+        const maxEl = document.getElementById('ig-search-max');
+        const sortEl = document.getElementById('ig-search-sort');
+        if (q && formState.query != null && !q.value) q.value = formState.query;
+        if (rangeEl && formState.days) rangeEl.value = String(formState.days);
+        if (maxEl && formState.maxCount) maxEl.value = String(formState.maxCount);
+        if (sortEl && formState.sort) sortEl.value = String(formState.sort);
+      }
+    } catch (e) {}
+  }, 200);
 
   /* ───────────────────────────────────────────────────────────────────
      WINNER EXTRACT — 인스타 게시물 댓글에서 당첨자 핸들 추출
@@ -7558,7 +7673,9 @@ ${authorLine}
     const callbackOriginBase = location.origin + location.pathname;
     const callbackOrigin = callbackOriginBase + '#threads-search';
     const cleanQuery = queryRaw.replace(/^#+/, '');
-    const searchUrl = `https://www.threads.net/search?q=${encodeURIComponent(cleanQuery)}&serp_type=default`;
+    // serp_type: default = 인기/Top, recent = 최근
+    const serpType = (tab === 'recent') ? 'recent' : 'default';
+    const searchUrl = `https://www.threads.net/search?q=${encodeURIComponent(cleanQuery)}&serp_type=${serpType}`;
     const tabLabel = tab === 'recent' ? '최근(Recent)' : '인기(Top)';
     const mode = _thMode || 'ultra';
     const modeBadge = mode === 'ultra' ? '⚡⚡ 초고속 (DOM 일괄 추출)'
@@ -7608,30 +7725,36 @@ ${authorLine}
       const te=c.querySelector('time');const date=te?(te.getAttribute('datetime')||te.textContent||'').trim():'';
       let likes=0,replies=0,reposts=0,shares=0;
       // 1) 집계 텍스트 패턴 매칭 — 가장 안정적 (한국어)
-      // 예: "581답글16리포스트56공유하기39"
       const numTok='(\\\\d+(?:[.,]\\\\d+)?[KkMm만천억]?)';
       const reKo=new RegExp(numTok+'답글'+numTok+'리포스트'+numTok+'(?:공유하기'+numTok+')?');
       const mKo=cardText.match(reKo);
-      if(mKo){
-        likes=pn(mKo[1]);replies=pn(mKo[2]);reposts=pn(mKo[3]);shares=pn(mKo[4]||'0');
-      }else{
+      if(mKo){likes=pn(mKo[1]);replies=pn(mKo[2]);reposts=pn(mKo[3]);shares=pn(mKo[4]||'0');}
+      else{
         // 2) 영어 패턴
-        const reEn=new RegExp(numTok+'\\\\s*(?:likes?|like)?\\\\s*'+numTok+'\\\\s*(?:repl(?:y|ies)|comments?)\\\\s*'+numTok+'\\\\s*(?:reposts?)','i');
+        const reEn=new RegExp(numTok+'\\\\s*(?:likes?)\\\\s*'+numTok+'\\\\s*(?:repl(?:y|ies)|comments?)\\\\s*'+numTok+'\\\\s*(?:reposts?)','i');
         const mEn=cardText.match(reEn);
         if(mEn){likes=pn(mEn[1]);replies=pn(mEn[2]);reposts=pn(mEn[3]);}
       }
-      // 3) fallback — aria-label 으로 각 버튼 매칭
+      // 3) aria-label — 매칭 안 된 메트릭만 채움 (이미 채워진 값은 유지)
+      for(const b of c.querySelectorAll('[role="button"],button,a[aria-label],[aria-label*="좋아요"],[aria-label*="답글"],[aria-label*="리포스트"]')){
+        const al=(b.getAttribute('aria-label')||'').toLowerCase();
+        if(!al)continue;
+        const numMatch=(b.textContent||'').match(/(\\d+(?:[.,]\\d+)?[KkMm만천억]?)/);
+        const ariaNumMatch=al.match(/(\\d+(?:[.,]\\d+)?[KkMm만천억]?)/);
+        const n=pn((numMatch&&numMatch[1])||(ariaNumMatch&&ariaNumMatch[1])||'');
+        if(!n)continue;
+        if(!likes&&/like|좋아요/.test(al))likes=n;
+        else if(!replies&&/repl|comment|답글|댓글/.test(al))replies=n;
+        else if(!reposts&&/repost|리포스트/.test(al))reposts=n;
+        else if(!shares&&/share|공유/.test(al))shares=n;
+      }
+      // 4) 마지막 보루 — 카드 하단 action bar 의 짧은 숫자 span (1~5자리)
       if(!likes&&!replies&&!reposts){
-        for(const b of c.querySelectorAll('[role="button"],button,a[aria-label]')){
-          const al=(b.getAttribute('aria-label')||'').toLowerCase();
-          const txt=(b.textContent||'').replace(/[^0-9.,Kk만천억]/g,'').slice(0,10);
-          const n=pn(txt);
-          if(!n)continue;
-          if(/like|좋아요/.test(al))likes=Math.max(likes,n);
-          else if(/repl|comment|답글|댓글/.test(al))replies=Math.max(replies,n);
-          else if(/repost|리포스트/.test(al))reposts=Math.max(reposts,n);
-          else if(/share|공유/.test(al))shares=Math.max(shares,n);
-        }
+        const ns=Array.from(c.querySelectorAll('span,div')).map(e=>(e.textContent||'').trim()).filter(t=>/^[0-9]{1,5}([,.][0-9]+)?[KkMm만천억]?$/.test(t)).map(pn);
+        if(ns.length>=1)likes=ns[0];
+        if(ns.length>=2)replies=ns[1];
+        if(ns.length>=3)reposts=ns[2];
+        if(ns.length>=4)shares=ns[3];
       }
       out.push({url:h,author,content:content.slice(0,500),date,likes,replies,reposts,shares,mediaType:'text',thumbnailDataUrl:''});
     }
@@ -7989,9 +8112,9 @@ ${captureRules}
         </div>
         <div style="font-size:13px; color:#c9d1d9; line-height:1.5; white-space:pre-wrap; word-break:break-word; margin-bottom:8px;">${esc(content)}${(p.content || '').length > 500 ? '…' : ''}</div>
         <div style="display:flex; gap:14px; font-size:11px; color:#8b949e; padding-top:6px; border-top:1px solid #1f2530;">
-          <span title="좋아요">❤ ${thFormatCount(likes)}</span>
-          <span title="답글">💬 ${thFormatCount(replies)}</span>
-          <span title="리포스트">🔁 ${thFormatCount(reposts)}</span>
+          <span title="좋아요"><span style="color:#ef4444;">❤</span> 좋아요 ${thFormatCount(likes)}</span>
+          <span title="답글"><span style="color:#38bdf8;">💬</span> 답글 ${thFormatCount(replies)}</span>
+          <span title="리포스트 (다시 게시 = 인용)"><span style="color:#22c55e;">↻</span> 리포스트 ${thFormatCount(reposts)}</span>
           ${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noopener" style="margin-left:auto; color:#2dd4bf; text-decoration:none;">원본 ↗</a>` : ''}
         </div>
       </div>
