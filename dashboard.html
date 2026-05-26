@@ -2005,6 +2005,12 @@
                 <option value="100">100</option>
               </select>
             </div>
+            <div class="field-inline">
+              약사:
+              <select id="pv-pharmacist" style="min-width:160px;">
+                <option value="">전체</option>
+              </select>
+            </div>
           </div>
 
           <div class="pv-table-wrap" id="pv-table-wrap">
@@ -2018,6 +2024,7 @@
                   <th>직전 공구</th>
                   <th>다음 공구</th>
                   <th>상태</th>
+                  <th style="width:120px;text-align:center;">액션</th>
                 </tr>
               </thead>
               <tbody id="pv-tbody"></tbody>
@@ -2030,6 +2037,184 @@
             <button id="pv-next" disabled>다음</button>
           </div>
         </div>
+
+        <!-- ========== GP APPLY MODAL ========== -->
+        <div id="gp-apply-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; width:100%; max-width:720px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #e5e7eb; position:sticky; top:0; background:#fff; z-index:1;">
+              <h3 style="margin:0; font-size:16px; color:#111827;">🛒 공구 신청 자동화</h3>
+              <button onclick="closeGpApplyModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888; line-height:1; padding:0 4px;">×</button>
+            </div>
+            <div style="padding:16px 20px; color:#111827;">
+              <!-- 선택 제품 정보 -->
+              <div id="gp-product-info" style="display:flex; gap:12px; padding:12px; background:#f6f8fb; border-radius:8px; margin-bottom:14px;">
+                <img id="gp-product-thumb" src="" alt="" style="width:56px;height:56px;border-radius:6px;object-fit:cover;background:#eee;">
+                <div style="flex:1; min-width:0;">
+                  <div id="gp-product-name" style="font-weight:600; font-size:14px; line-height:1.4;">제품명</div>
+                  <div id="gp-product-brand" style="font-size:12px; color:#666; margin-top:4px;">브랜드</div>
+                </div>
+              </div>
+
+              <!-- 자격증명 -->
+              <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:14px; background:#fafbfc;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <strong style="font-size:13px;">🔐 관리자 자격증명</strong>
+                  <button onclick="toggleGpCredEdit()" id="gp-cred-edit-btn" style="font-size:11px; padding:3px 8px; background:#fff; border:1px solid #d1d5db; border-radius:4px; cursor:pointer;">변경</button>
+                </div>
+                <div id="gp-cred-display" style="font-size:12px; color:#374151; line-height:1.7;">
+                  <div>ID: <span id="gp-cred-id-mask">-</span></div>
+                  <div>PW: <span id="gp-cred-pw-mask">-</span></div>
+                </div>
+                <div id="gp-cred-form" style="display:none;">
+                  <div style="display:flex; gap:6px; margin-bottom:6px;">
+                    <input type="password" id="gp-cred-id" placeholder="이메일" autocomplete="off" style="flex:1; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                    <button onclick="toggleGpEmailVisibility()" id="gp-cred-id-toggle" type="button" style="padding:7px 10px; background:#fff; border:1px solid #d1d5db; border-radius:5px; cursor:pointer; font-size:11px;">표시</button>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <input type="password" id="gp-cred-pw" placeholder="비밀번호" autocomplete="new-password" style="flex:1; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                    <button onclick="toggleGpPasswordVisibility()" id="gp-cred-pw-toggle" type="button" style="padding:7px 10px; background:#fff; border:1px solid #d1d5db; border-radius:5px; cursor:pointer; font-size:11px;">표시</button>
+                  </div>
+                  <div style="font-size:11px; color:#888; margin-top:6px;">※ 이 브라우저 localStorage 에만 저장됨 (base64 obfuscation, 암호화 아님)</div>
+                </div>
+              </div>
+
+              <!-- 샘플 신청 (기본 ON) -->
+              <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:10px; cursor:pointer; background:#fff;">
+                <input type="checkbox" id="gp-sample-check" checked onchange="toggleGpSampleSection()" style="width:16px;height:16px;">
+                <strong style="font-size:13px;">📦 샘플도 함께 신청</strong>
+                <span style="font-size:11px; color:#888;">(체크 해제 시 공구만 신청)</span>
+              </label>
+              <div id="gp-sample-section" style="display:block; border:1px solid #e5e7eb; border-radius:8px; padding:14px; margin-bottom:14px; background:#fafbfc;">
+                <div class="gp-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <label>신청 유형
+                    <select id="gp-sample-type" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                      <option value="공구 검토">공구 검토</option>
+                      <option value="개인 사용">개인 사용</option>
+                      <option value="이벤트 상품">이벤트 상품</option>
+                    </select>
+                  </label>
+                  <label>수량
+                    <input type="number" id="gp-sample-qty" value="3" min="1" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                  </label>
+                </div>
+                <hr style="margin:12px 0; border:none; border-top:1px solid #e5e7eb;">
+                <div style="font-size:12px; font-weight:600; margin-bottom:8px;">배송 정보</div>
+                <div class="gp-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <label>이름
+                    <input type="text" id="gp-ship-name" value="앤서니" placeholder="앤서니" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                  </label>
+                  <label>연락처
+                    <input type="text" id="gp-ship-phone" value="010-3772-5650" placeholder="010-3772-5650" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                  </label>
+                </div>
+                <label style="display:block; margin-top:10px;">주소
+                  <input type="text" id="gp-ship-addr" value="성남시 수정구 남위례로200 수자인더퍼스트 302동 1902호" placeholder="성남시 수정구 남위례로200 수자인더퍼스트 302동 1902호" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                </label>
+                <label style="display:block; margin-top:10px;">요청 사항
+                  <input type="text" id="gp-ship-note" value="빠르게 보내주세요" placeholder="빠르게 보내주세요" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px;">
+                </label>
+              </div>
+
+              <!-- 공동구매 신청 -->
+              <div style="border:1px solid #c7d2fe; border-radius:8px; padding:14px; margin-bottom:14px; background:#f0f4ff;">
+                <div style="font-weight:600; font-size:13px; margin-bottom:10px;">🚀 공동구매 신청 (필수)</div>
+
+                <div style="font-size:12px; font-weight:600; margin-bottom:6px;">진행 일정</div>
+                <div class="gp-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px;">
+                  <label style="font-size:11px;">시작
+                    <div style="display:flex; gap:4px;">
+                      <input type="date" id="gp-start-date" value="2026-06-27" style="flex:1; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                      <input type="time" id="gp-start-time" value="11:00" step="1" style="width:100px; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                    </div>
+                  </label>
+                  <label style="font-size:11px;">종료
+                    <div style="display:flex; gap:4px;">
+                      <input type="date" id="gp-end-date" value="2026-06-28" style="flex:1; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                      <input type="time" id="gp-end-time" value="12:00" step="1" style="width:100px; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                    </div>
+                  </label>
+                </div>
+
+                <hr style="margin:12px 0; border:none; border-top:1px solid #e5e7eb;">
+                <div style="font-size:12px; font-weight:600; margin-bottom:8px;">이벤트 선택</div>
+
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:6px;">
+                  <input type="checkbox" id="gp-pre-event-check" checked onchange="toggleGpPreEvent()"> 사전 이벤트
+                </label>
+                <div id="gp-pre-event-section" style="padding-left:18px; margin-bottom:10px;">
+                  <div class="gp-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <label style="font-size:11px;">당첨 대상
+                      <select id="gp-pre-target" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="약사 선정">약사 선정</option>
+                        <option value="구매자">구매자</option>
+                        <option value="전체">전체</option>
+                      </select>
+                    </label>
+                    <label style="font-size:11px;">당첨 인원
+                      <input type="number" id="gp-pre-count" value="10" min="1" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                    </label>
+                    <label style="font-size:11px;">당첨 방식
+                      <select id="gp-pre-method" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="약사 선정">약사 선정</option>
+                        <option value="랜덤 추첨">랜덤 추첨</option>
+                        <option value="선착순">선착순</option>
+                      </select>
+                    </label>
+                    <label style="font-size:11px;">당첨 상품
+                      <select id="gp-pre-prize" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="같은 상품">같은 상품</option>
+                        <option value="다른 상품">다른 상품</option>
+                        <option value="굿즈">굿즈</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:6px;">
+                  <input type="checkbox" id="gp-buyer-event-check" onchange="toggleGpBuyerEvent()"> 구매자 이벤트
+                </label>
+                <div id="gp-buyer-event-section" style="display:none; padding-left:18px;">
+                  <div class="gp-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <label style="font-size:11px;">당첨 대상
+                      <select id="gp-buyer-target" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="구매자">구매자</option>
+                        <option value="후기 작성자">후기 작성자</option>
+                      </select>
+                    </label>
+                    <label style="font-size:11px;">당첨 인원
+                      <input type="number" id="gp-buyer-count" value="5" min="1" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                    </label>
+                    <label style="font-size:11px;">당첨 방식
+                      <select id="gp-buyer-method" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="랜덤 추첨">랜덤 추첨</option>
+                        <option value="선착순">선착순</option>
+                      </select>
+                    </label>
+                    <label style="font-size:11px;">당첨 상품
+                      <select id="gp-buyer-prize" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:12px;">
+                        <option value="같은 상품">같은 상품</option>
+                        <option value="다른 상품">다른 상품</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 코멘트 -->
+              <label style="display:block; margin-bottom:14px;">
+                <strong style="font-size:13px;">💬 코멘트</strong>
+                <input type="text" id="gp-comment" placeholder="자동화 입니다" value="자동화 입니다" style="width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:5px; font-size:13px; margin-top:6px;">
+              </label>
+
+              <!-- 액션 버튼 -->
+              <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:18px; padding-top:14px; border-top:1px solid #e5e7eb;">
+                <button onclick="closeGpApplyModal()" style="padding:9px 16px; background:#fff; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:13px;">취소</button>
+                <button onclick="runGpApply()" style="padding:9px 18px; background:#4f46e5; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">🤖 Claude 명령 생성 + 클립보드 복사</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ========== /GP APPLY MODAL ========== -->
       </section>
       <section class="view" id="view-sellers">
         <div class="view-placeholder">
@@ -2704,6 +2889,20 @@
           bindProductsFilters();
           bound = true;
         }
+        // 매출 대시보드와 약사 필터 공유 — 처음 진입 시 저장돼 있거나 이메일로 추론된 값을 자동 적용
+        if (!productsState.pharmacist) {
+          let saved = '';
+          try { saved = localStorage.getItem(INFLUENCER_FILTER_KEY) || ''; } catch (e) {}
+          if (!saved && typeof inferDefaultInfluencer === 'function') {
+            saved = inferDefaultInfluencer() || '';
+            if (saved) { try { localStorage.setItem(INFLUENCER_FILTER_KEY, saved); } catch (e) {} }
+          }
+          if (saved) {
+            productsState.pharmacist = saved;
+            const sel = document.getElementById('pv-pharmacist');
+            if (sel) sel.value = saved;
+          }
+        }
         fetchProducts();
       };
     })(),
@@ -3123,6 +3322,9 @@
     loading: false,
     error: null,                 // 'auth' | 'network' | null
     _reqId: 0,
+    pharmacist: '',              // 약사명 필터 ('' = 전체)
+    _allCache: null,             // 약사 필터 켜졌을 때 전체 결과 캐시
+    _allCacheKey: '',            // 캐시 유효성 키 (keyword+available+isExpired+sort)
   };
 
   function buildProductsQuery() {
@@ -3138,12 +3340,66 @@
     return p.toString();
   }
 
+  function productsFilterCacheKey() {
+    return [productsState.keyword.trim(), productsState.available, productsState.isExpired ? '1':'0', productsState.sortType].join('|');
+  }
+
+  async function fetchAllProductsForFilter() {
+    // 서버 측 keyword/available/sort/expired 조건은 유지한 채 전체 페이지 fetch
+    const cacheKey = productsFilterCacheKey();
+    if (productsState._allCache && productsState._allCacheKey === cacheKey) return productsState._allCache;
+    const PAGE = 200;
+    let page = 0;
+    let all = [];
+    while (true) {
+      const p = new URLSearchParams();
+      if (productsState.keyword.trim()) p.set('keyword', productsState.keyword.trim());
+      if (productsState.available === 'true' || productsState.available === 'false') p.set('availableGroupPurchaseProduct', productsState.available);
+      p.set('isExpired', productsState.isExpired ? 'true' : 'false');
+      p.set('sortType', productsState.sortType);
+      p.set('page', String(page));
+      p.set('size', String(PAGE));
+      const res = await fetch(API_BASE + '/api/admin/v2/group-purchases/product-influencers?' + p.toString(), {
+        headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + bearerToken },
+      });
+      if (!res.ok) throw new Error('http ' + res.status);
+      const json = await res.json();
+      const items = (json && json.data) || [];
+      all = all.concat(items);
+      const total = (json && json.meta && json.meta.totalCount) || 0;
+      if (all.length >= total || items.length < PAGE) break;
+      page++;
+      if (page > 50) break; // safety
+    }
+    productsState._allCache = all;
+    productsState._allCacheKey = cacheKey;
+    return all;
+  }
+
   async function fetchProducts() {
     const reqId = ++productsState._reqId;
     productsState.loading = true;
     productsState.error = null;
     renderProductsView();
     try {
+      // 약사 필터가 켜진 경우: 전체 캐시 + 클라이언트 페이징
+      if (productsState.pharmacist) {
+        const all = await fetchAllProductsForFilter();
+        if (reqId !== productsState._reqId) return;
+        const filtered = all.filter(it => {
+          const names = getPharmacistNames(it);
+          return names.has(productsState.pharmacist);
+        });
+        const start = productsState.page * productsState.size;
+        const slice = filtered.slice(start, start + productsState.size);
+        productsState.data = { meta: { totalCount: filtered.length }, data: slice };
+        if (slice.length > 0) updateSidebarBrand(slice[0].influencerName, slice[0].pharmacyName);
+        productsState.loading = false;
+        populatePharmacistDropdown(all);
+        renderProductsView();
+        return;
+      }
+      // 약사 필터 없음: 기존 서버 페이징 흐름
       const qs = buildProductsQuery();
       const res = await fetch(API_BASE + '/api/admin/v2/group-purchases/product-influencers?' + qs, {
         headers: { 'accept': 'application/json', 'Authorization': 'Bearer ' + bearerToken },
@@ -3168,6 +3424,8 @@
       productsState.data = json;
       if (json && json.data && json.data.length > 0) updateSidebarBrand(json.data[0].influencerName, json.data[0].pharmacyName);
       productsState.loading = false;
+      // 드롭다운에 약사 목록 채우기 (현재 페이지 데이터 기준 — 첫 진입 시 옵션 없음일 수 있으므로 비동기 전체 로드도 고려)
+      populatePharmacistDropdown((json && json.data) || []);
       renderProductsView();
     } catch (e) {
       if (reqId !== productsState._reqId) return;
@@ -3175,6 +3433,22 @@
       productsState.loading = false;
       renderProductsView();
     }
+  }
+
+  function populatePharmacistDropdown(items) {
+    const sel = document.getElementById('pv-pharmacist');
+    if (!sel) return;
+    const counter = new Map();
+    (items || []).forEach(it => {
+      getPharmacistNames(it).forEach(n => counter.set(n, (counter.get(n) || 0) + 1));
+    });
+    const current = productsState.pharmacist || '';
+    const names = Array.from(counter.keys()).sort((a, b) => a.localeCompare(b, 'ko'));
+    // 현재 선택값이 목록에 없으면 강제로 포함
+    if (current && !counter.has(current)) names.unshift(current);
+    sel.innerHTML =
+      '<option value="">전체</option>' +
+      names.map(n => `<option value="${esc(n)}"${n === current ? ' selected' : ''}>${esc(n)}${counter.has(n) ? ' (' + counter.get(n) + ')' : ''}</option>`).join('');
   }
 
   function pvFormatDate(iso) {
@@ -3275,6 +3549,7 @@
         <td>${it.availableGroupPurchaseProduct
           ? '<span class="pv-badge ok">✅ 가능</span>'
           : '<span class="pv-badge ng">❌ 불가</span>'}</td>
+        <td style="text-align:center;"><button class="btn-sm primary gp-apply-btn" data-idx="${idx}" title="공구 신청 자동화" style="padding:6px 10px; font-size:11px; white-space:nowrap;">🛒 공구 신청</button></td>
       </tr>
     `).join('');
 
@@ -3284,6 +3559,15 @@
         const i = Number(tr.dataset.idx);
         const row = items[i];
         if (typeof openProductDetail === 'function') openProductDetail(row);
+      };
+    });
+    // 공구 신청 버튼 — 행 클릭과 분리 (stopPropagation)
+    tbody.querySelectorAll('.gp-apply-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const i = Number(btn.dataset.idx);
+        const row = items[i];
+        if (typeof openGpApplyModal === 'function') openGpApplyModal(row);
       };
     });
 
@@ -3359,6 +3643,19 @@
       productsState.page = 0;
       fetchProducts();
     });
+
+    const pharmEl = document.getElementById('pv-pharmacist');
+    if (pharmEl) {
+      pharmEl.addEventListener('change', () => {
+        productsState.pharmacist = pharmEl.value || '';
+        productsState.page = 0;
+        try {
+          if (productsState.pharmacist) localStorage.setItem(INFLUENCER_FILTER_KEY, productsState.pharmacist);
+          else localStorage.removeItem(INFLUENCER_FILTER_KEY);
+        } catch (e) {}
+        fetchProducts();
+      });
+    }
 
     prev.addEventListener('click', () => {
       if (productsState.page > 0) {
@@ -6399,6 +6696,397 @@ ${authorLine}
 
   // 페이지 로드 시 캐시 있으면 자동 표시
   setTimeout(() => { try { renderWinnerResults(); } catch (e) {} }, 200);
+
+  /* ───────────────────────────────────────────────────────────────────
+     GROUP-BUY APPLY — 제품 관리 공구 신청 자동화 (Claude 사이드바 연동)
+     ─────────────────────────────────────────────────────────────────── */
+  var GP_CRED_KEY = 'gp_admin_credentials';
+  var GP_DEFAULTS_KEY = 'gp_apply_defaults';
+  var GP_ADMIN_URL = 'https://stg-admin.store.friendly-pharmacist.com/';
+  var GP_DEFAULT_EMAIL = 'product.pharmabros@gmail.com';
+  var GP_DEFAULT_PASSWORD = 'fp.pharmabros1!';
+  // 테스트용 하드코딩 제품명 — 어떤 행을 눌러도 프롬프트에서는 이 제품으로 신청 진행
+  var GP_HARDCODED_PRODUCT_NAME = '보령 간엔포스M 액상 밀크씨슬';
+  var _gpCurrentRow = null;
+  var _lastGpApplyCommand = '';
+
+  function b64Encode(s) {
+    try { return btoa(unescape(encodeURIComponent(s || ''))); } catch (e) { return ''; }
+  }
+  function b64Decode(s) {
+    try { return decodeURIComponent(escape(atob(s || ''))); } catch (e) { return ''; }
+  }
+  function loadGpCredentials() {
+    try {
+      const raw = localStorage.getItem(GP_CRED_KEY);
+      if (!raw) return { email: GP_DEFAULT_EMAIL, password: GP_DEFAULT_PASSWORD };
+      const obj = JSON.parse(raw);
+      return {
+        email: b64Decode(obj.email || '') || GP_DEFAULT_EMAIL,
+        password: b64Decode(obj.password || '') || GP_DEFAULT_PASSWORD,
+      };
+    } catch (e) { return { email: GP_DEFAULT_EMAIL, password: GP_DEFAULT_PASSWORD }; }
+  }
+  function saveGpCredentials(email, password) {
+    try {
+      localStorage.setItem(GP_CRED_KEY, JSON.stringify({
+        email: b64Encode(email || ''),
+        password: b64Encode(password || ''),
+      }));
+    } catch (e) {}
+  }
+  function loadGpDefaults() {
+    try { return JSON.parse(localStorage.getItem(GP_DEFAULTS_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveGpDefaults(obj) {
+    try { localStorage.setItem(GP_DEFAULTS_KEY, JSON.stringify(obj || {})); } catch (e) {}
+  }
+  function maskEmail(email) {
+    if (!email) return '';
+    const i = email.indexOf('@');
+    if (i < 0) return email[0] + '****';
+    const local = email.slice(0, i);
+    const domain = email.slice(i);
+    if (local.length <= 2) return local[0] + '****' + domain;
+    return local.slice(0, 2) + '*'.repeat(Math.max(2, local.length - 2)) + domain;
+  }
+  function maskPassword(pw) {
+    if (!pw) return '';
+    return '●'.repeat(Math.min(8, pw.length));
+  }
+
+  // ---- Modal open / close ----
+  window.openGpApplyModal = function(row) {
+    _gpCurrentRow = row || null;
+    const modal = document.getElementById('gp-apply-modal');
+    if (!modal) return;
+
+    // 제품 정보 채우기
+    const thumb = document.getElementById('gp-product-thumb');
+    const name = document.getElementById('gp-product-name');
+    const brand = document.getElementById('gp-product-brand');
+    if (thumb) thumb.src = (row && row.imageUrl) || '';
+    if (name) name.textContent = (row && row.productName) || '(제품명 없음)';
+    if (brand) brand.textContent = (row && row.brandName) || '';
+
+    // 자격증명 자동 채움 (마스킹 표시)
+    const cred = loadGpCredentials();
+    const idMask = document.getElementById('gp-cred-id-mask');
+    const pwMask = document.getElementById('gp-cred-pw-mask');
+    const idInput = document.getElementById('gp-cred-id');
+    const pwInput = document.getElementById('gp-cred-pw');
+    if (idMask) idMask.textContent = cred.email ? maskEmail(cred.email) : '(미설정)';
+    if (pwMask) pwMask.textContent = cred.password ? maskPassword(cred.password) : '(미설정)';
+    if (idInput) idInput.value = cred.email || '';
+    if (pwInput) pwInput.value = cred.password || '';
+
+    // 항상 마스킹된 표시 상태로 시작 (입력 폼은 숨김)
+    const display = document.getElementById('gp-cred-display');
+    const form = document.getElementById('gp-cred-form');
+    if (display) display.style.display = 'block';
+    if (form) form.style.display = 'none';
+    const editBtn = document.getElementById('gp-cred-edit-btn');
+    if (editBtn) editBtn.textContent = '변경';
+
+    // 샘플 섹션 표시 상태를 체크박스 상태에 동기화
+    if (typeof window.toggleGpSampleSection === 'function') window.toggleGpSampleSection();
+    if (typeof window.toggleGpPreEvent === 'function') window.toggleGpPreEvent();
+    if (typeof window.toggleGpBuyerEvent === 'function') window.toggleGpBuyerEvent();
+
+    // 기본값 자동 채움
+    const defaults = loadGpDefaults();
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== '') el.value = v; };
+    if (defaults.shipName) setVal('gp-ship-name', defaults.shipName);
+    if (defaults.shipPhone) setVal('gp-ship-phone', defaults.shipPhone);
+    if (defaults.shipAddr) setVal('gp-ship-addr', defaults.shipAddr);
+    if (defaults.shipNote) setVal('gp-ship-note', defaults.shipNote);
+    if (defaults.sampleType) setVal('gp-sample-type', defaults.sampleType);
+    if (defaults.sampleQty) setVal('gp-sample-qty', defaults.sampleQty);
+    if (defaults.comment) setVal('gp-comment', defaults.comment);
+
+    modal.style.display = 'flex';
+  };
+
+  window.closeGpApplyModal = function() {
+    const modal = document.getElementById('gp-apply-modal');
+    if (modal) modal.style.display = 'none';
+    _gpCurrentRow = null;
+  };
+
+  // ---- 자격증명 편집/저장/표시 토글 ----
+  window.toggleGpCredEdit = function() {
+    const display = document.getElementById('gp-cred-display');
+    const form = document.getElementById('gp-cred-form');
+    const btn = document.getElementById('gp-cred-edit-btn');
+    if (!display || !form || !btn) return;
+    if (form.style.display === 'none' || !form.style.display) {
+      display.style.display = 'none';
+      form.style.display = 'block';
+      btn.textContent = '저장';
+      // 입력란을 열 때 무조건 마스킹 상태로 리셋
+      const idEl = document.getElementById('gp-cred-id');
+      const pwEl = document.getElementById('gp-cred-pw');
+      const idBtn = document.getElementById('gp-cred-id-toggle');
+      const pwBtn = document.getElementById('gp-cred-pw-toggle');
+      if (idEl) idEl.type = 'password';
+      if (pwEl) pwEl.type = 'password';
+      if (idBtn) idBtn.textContent = '표시';
+      if (pwBtn) pwBtn.textContent = '표시';
+    } else {
+      const email = (document.getElementById('gp-cred-id') || {}).value || '';
+      const pw = (document.getElementById('gp-cred-pw') || {}).value || '';
+      saveGpCredentials(email, pw);
+      const idMask = document.getElementById('gp-cred-id-mask');
+      const pwMask = document.getElementById('gp-cred-pw-mask');
+      if (idMask) idMask.textContent = email ? maskEmail(email) : '(미설정)';
+      if (pwMask) pwMask.textContent = pw ? maskPassword(pw) : '(미설정)';
+      display.style.display = 'block';
+      form.style.display = 'none';
+      btn.textContent = '변경';
+    }
+  };
+
+  window.toggleGpPasswordVisibility = function() {
+    const pw = document.getElementById('gp-cred-pw');
+    const btn = document.getElementById('gp-cred-pw-toggle');
+    if (!pw || !btn) return;
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      btn.textContent = '숨김';
+    } else {
+      pw.type = 'password';
+      btn.textContent = '표시';
+    }
+  };
+
+  window.toggleGpEmailVisibility = function() {
+    const el = document.getElementById('gp-cred-id');
+    const btn = document.getElementById('gp-cred-id-toggle');
+    if (!el || !btn) return;
+    if (el.type === 'password') {
+      el.type = 'text';
+      btn.textContent = '숨김';
+    } else {
+      el.type = 'password';
+      btn.textContent = '표시';
+    }
+  };
+
+  // ---- 섹션 토글 ----
+  window.toggleGpSampleSection = function() {
+    const check = document.getElementById('gp-sample-check');
+    const sec = document.getElementById('gp-sample-section');
+    if (sec) sec.style.display = (check && check.checked) ? 'block' : 'none';
+  };
+
+  window.toggleGpPreEvent = function() {
+    const check = document.getElementById('gp-pre-event-check');
+    const sec = document.getElementById('gp-pre-event-section');
+    if (sec) sec.style.display = (check && check.checked) ? 'block' : 'none';
+  };
+
+  window.toggleGpBuyerEvent = function() {
+    const check = document.getElementById('gp-buyer-event-check');
+    const sec = document.getElementById('gp-buyer-event-section');
+    if (sec) sec.style.display = (check && check.checked) ? 'block' : 'none';
+  };
+
+  // ---- 프롬프트 빌드 ----
+  function buildGpApplyPrompt(s) {
+    const productName = GP_HARDCODED_PRODUCT_NAME;   // 테스트용 하드코딩
+    const lines = [];
+    lines.push('다음 작업을 Claude for Chrome 사이드바에서 자동 수행해주세요.');
+    lines.push('');
+    lines.push('[목표]');
+    lines.push('파마브로스 어드민에 로그인하여 "' + productName + '" 의 ' + (s.applySample ? '샘플 신청 + ' : '') + '공동구매 신청을 등록합니다.');
+    lines.push('');
+    lines.push('[로그인 자격증명]');
+    lines.push('- URL: ' + GP_ADMIN_URL);
+    lines.push('- ID:  ' + s.adminEmail);
+    lines.push('- PW:  ' + s.adminPassword);
+    lines.push('');
+    lines.push('[수행 단계]');
+    lines.push('1. 위 URL 새 탭으로 접속, 로그인');
+    lines.push('2. 좌측 메뉴 "공구 상품 관리" 클릭');
+    lines.push('3. 제품 검색창에 "' + productName + '" 입력 → 목록에서 해당 제품 행의 체크박스를 선택 (행 클릭이 아니라 좌측 체크박스 체크)');
+    lines.push('4. 상세 페이지에서 "신청하기" 버튼 클릭');
+
+    let step = 5;
+    if (s.applySample) {
+      lines.push(step++ + '. 모달에서 "샘플 신청" 탭/체크박스 선택');
+      lines.push(step++ + '. 신청 유형: "' + s.sampleType + '"  /  수량: ' + s.sampleQty);
+      lines.push(step++ + '. 배송 정보:');
+      lines.push('   - 이름:    ' + s.shipName);
+      lines.push('   - 연락처:  ' + s.shipPhone);
+      lines.push('   - 주소:    ' + s.shipAddr);
+      lines.push(step++ + '. 요청 사항: "' + s.shipNote + '"');
+      lines.push(step++ + '. "신청하기" 클릭 → 샘플 신청 완료 확인');
+    }
+
+    lines.push(step++ + '. 이어서 "공동구매 신청" 폼으로 이동 (또는 동일 제품에서 "공동구매 신청" 버튼 클릭)');
+    lines.push(step++ + '. 진행 일정:');
+    lines.push('   - 시작: ' + s.startDate + ' ' + s.startTime);
+    lines.push('   - 종료: ' + s.endDate + ' ' + s.endTime);
+    lines.push(step++ + '. 이벤트 선택:');
+    if (s.preEvent) {
+      lines.push('   ✅ 사전 이벤트');
+      lines.push('      - 당첨 대상: ' + s.preEvent.target);
+      lines.push('      - 당첨 인원: ' + s.preEvent.count + '명');
+      lines.push('      - 당첨 방식: ' + s.preEvent.method);
+      lines.push('      - 당첨 상품: ' + s.preEvent.prize);
+    } else {
+      lines.push('   ☐ 사전 이벤트 (선택 안함)');
+    }
+    if (s.buyerEvent) {
+      lines.push('   ✅ 구매자 이벤트');
+      lines.push('      - 당첨 대상: ' + s.buyerEvent.target);
+      lines.push('      - 당첨 인원: ' + s.buyerEvent.count + '명');
+      lines.push('      - 당첨 방식: ' + s.buyerEvent.method);
+      lines.push('      - 당첨 상품: ' + s.buyerEvent.prize);
+    } else {
+      lines.push('   ☐ 구매자 이벤트 (선택 안함)');
+    }
+    lines.push(step++ + '. 코멘트: "' + s.comment + '"');
+    lines.push(step++ + '. "신청하기" 클릭 → 공동구매 신청 완료 확인');
+    lines.push('');
+    lines.push('[완료 조건]');
+    lines.push('- 신청 성공 토스트 또는 페이지 이동 확인');
+    lines.push('- 결과(성공 메시지 또는 오류) 를 채팅에 한 줄로 보고');
+    lines.push('');
+    lines.push('[안전]');
+    lines.push('- 다른 제품/메뉴 건드리지 말 것');
+    lines.push('- 신청 단계 중 의외의 모달/팝업 뜨면 사용자에게 알리고 일시정지');
+    return lines.join('\n');
+  }
+
+  // ---- 실행 ----
+  window.runGpApply = function() {
+    // 1) 자격증명 수집/저장
+    const credEmail = (document.getElementById('gp-cred-id') || {}).value
+      || loadGpCredentials().email;
+    const credPw = (document.getElementById('gp-cred-pw') || {}).value
+      || loadGpCredentials().password;
+    if (!credEmail || !credPw) {
+      alert('관리자 자격증명을 입력해주세요. (ID / PW)');
+      return;
+    }
+    saveGpCredentials(credEmail, credPw);
+
+    // 2) 상태 수집
+    const v = (id) => { const el = document.getElementById(id); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; };
+
+    const applySample = v('gp-sample-check');
+    const preCheck = v('gp-pre-event-check');
+    const buyerCheck = v('gp-buyer-event-check');
+
+    if (!preCheck && !buyerCheck) {
+      if (!confirm('사전 이벤트 / 구매자 이벤트를 모두 선택 안 했습니다. 이벤트 없이 진행할까요?')) return;
+    }
+
+    const state = {
+      productName: (_gpCurrentRow && _gpCurrentRow.productName) || '(제품 미선택)',
+      productBrand: (_gpCurrentRow && _gpCurrentRow.brandName) || '',
+      adminEmail: credEmail,
+      adminPassword: credPw,
+      applySample: applySample,
+      sampleType: v('gp-sample-type'),
+      sampleQty: v('gp-sample-qty'),
+      shipName: v('gp-ship-name'),
+      shipPhone: v('gp-ship-phone'),
+      shipAddr: v('gp-ship-addr'),
+      shipNote: v('gp-ship-note'),
+      startDate: v('gp-start-date'),
+      startTime: v('gp-start-time'),
+      endDate: v('gp-end-date'),
+      endTime: v('gp-end-time'),
+      preEvent: preCheck ? {
+        target: v('gp-pre-target'),
+        count: v('gp-pre-count'),
+        method: v('gp-pre-method'),
+        prize: v('gp-pre-prize')
+      } : null,
+      buyerEvent: buyerCheck ? {
+        target: v('gp-buyer-target'),
+        count: v('gp-buyer-count'),
+        method: v('gp-buyer-method'),
+        prize: v('gp-buyer-prize')
+      } : null,
+      comment: v('gp-comment')
+    };
+
+    // 3) 검증 (샘플 체크 시 배송 정보 필수)
+    if (applySample) {
+      if (!state.shipName || !state.shipPhone || !state.shipAddr) {
+        alert('샘플 신청을 체크하셨습니다. 배송 이름·연락처·주소를 모두 입력해주세요.');
+        return;
+      }
+    }
+    if (!state.startDate || !state.endDate) {
+      alert('공동구매 시작/종료 일정을 입력해주세요.');
+      return;
+    }
+
+    // 4) 기본값 캐시 저장 (다음 신청 시 자동 채움)
+    saveGpDefaults({
+      shipName: state.shipName,
+      shipPhone: state.shipPhone,
+      shipAddr: state.shipAddr,
+      shipNote: state.shipNote,
+      sampleType: state.sampleType,
+      sampleQty: state.sampleQty,
+      comment: state.comment
+    });
+
+    // 5) 프롬프트 빌드 + 클립보드
+    const cmd = buildGpApplyPrompt(state);
+    _lastGpApplyCommand = cmd;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        showGpApplyToast(cmd);
+      }).catch(() => {
+        showGpApplyToast(cmd);
+      });
+    } else {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = cmd;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      showGpApplyToast(cmd);
+    }
+
+    // 모달 닫기
+    closeGpApplyModal();
+  };
+
+  // ---- Toast ----
+  function showGpApplyToast(cmd) {
+    let toast = document.getElementById('gp-apply-toast');
+    if (toast) toast.remove();
+    toast = document.createElement('div');
+    toast.id = 'gp-apply-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:16px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:99999;max-width:360px;font-size:13px;line-height:1.5;transform:translateX(420px);transition:transform 0.3s ease;';
+    toast.innerHTML =
+      '<div style="font-weight:600; margin-bottom:8px; font-size:14px;">✅ Claude 명령 복사 완료</div>' +
+      '<div style="color:#cbd5e1; margin-bottom:12px;">사이드바를 열고 붙여넣기 하세요.</div>' +
+      '<div style="background:#111827; padding:8px 10px; border-radius:6px; font-family:monospace; font-size:12px; color:#fbbf24; margin-bottom:12px;">' +
+      '⌥ + A → ⌘ + V → Enter' +
+      '</div>' +
+      '<div style="display:flex; gap:8px;">' +
+      '  <button onclick="(function(){navigator.clipboard&&navigator.clipboard.writeText(window._gpApplyCmd||\'\');})()" style="flex:1; background:#4f46e5; color:#fff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; font-size:12px;">📋 다시 복사</button>' +
+      '  <button onclick="document.getElementById(\'gp-apply-toast\').remove()" style="background:#374151; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:12px;">닫기</button>' +
+      '</div>';
+    document.body.appendChild(toast);
+    window._gpApplyCmd = cmd;
+    setTimeout(() => { toast.style.transform = 'translateX(0)'; }, 10);
+    // auto-dismiss after 15s
+    setTimeout(() => { if (toast && toast.parentNode) { toast.style.transform = 'translateX(420px)'; setTimeout(() => toast.remove(), 400); } }, 15000);
+  }
+  window.showGpApplyToast = showGpApplyToast;
 
   // Initial paint from cache (Instagram)
   try { renderInstagramPanel(); } catch (e) {}
